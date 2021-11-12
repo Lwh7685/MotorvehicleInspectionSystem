@@ -222,7 +222,12 @@ namespace MotorvehicleInspectionSystem.Controllers
                 }
                 //jsonData合法
                 requestData =JSONHelper.DeserializeJson<RequestData>(jsonData);
-                
+                //将文本追加到文件末尾
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"D:\WriteLines2.txt", true))
+                {
+                    file.WriteLine(DateTime.Now .ToString ("yyyy-MM-dd HH:mm:ss")+"----" +jkId+"----"+jsonData +"/n");
+
+                }
                 switch (jkId)
                 {
                     //用户登录
@@ -280,9 +285,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             responseData.RowNum = responseData.Body.Count();
             return responseData;
-        }
-
-
-
+        }        
     }
 }

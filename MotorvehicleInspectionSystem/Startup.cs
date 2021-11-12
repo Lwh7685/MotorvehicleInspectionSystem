@@ -17,6 +17,10 @@ using MotorvehicleInspectionSystem.Controllers;
 using Newtonsoft.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
+using log4net.Repository;
+using MotorvehicleInspectionSystem.Log;
+using log4net;
+using log4net.Config;
 
 namespace MotorvehicleInspectionSystem
 {
@@ -28,6 +32,10 @@ namespace MotorvehicleInspectionSystem
         }
 
         public IConfiguration Configuration { get; }
+        /// <summary>
+        /// log4net 仓储库
+        /// </summary>
+        public static ILoggerRepository Repository { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -41,6 +49,13 @@ namespace MotorvehicleInspectionSystem
             VehicleInspectionController.SyUb = Configuration.GetConnectionString("SyUB");
             var conSerUB = Configuration.GetConnectionString("ConnUB");//连接配置文件appsettings.json
             VehicleInspectionController.ConstrUB = conSerUB;//获取到连接路径，将字段赋值给SqlHelper控制器的静态字段
+            //log注入ILoggerHelper
+            services.AddSingleton<ILoggerHelper, LoggerHelper>();
+
+            //log4net
+            Repository = LogManager.CreateRepository("MotorvehicleInspectionSystem");//项目名称
+            XmlConfigurator.Configure(Repository, new FileInfo("log4net.config"));//指定配置文件，
+
             services.AddControllers().AddNewtonsoftJson(options =>
             {
                 // 忽略循环引用

@@ -590,6 +590,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         public SaveResult[] LYYDJKW011(RequestData requestData, ResponseData responseData, string zdbs)
         {
             List<SaveResult> saveResults = new List<SaveResult>();
+            string xmlDocStr;
             ProjectDataNQ projectDataNQ;
             ProjectDataUC projectDataUC;
             ProjectDataF1 projectDataF1;
@@ -598,14 +599,36 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 ProjectData projectData = JSONHelper.ConvertObject<ProjectData>(requestData.Body[0]);
+                //实例化各项目检测类
                 switch (projectData.Jyxm)
                 {
                     case "NQ":
                         projectDataNQ = JSONHelper.ConvertObject<ProjectDataNQ>(projectData.Jcsj);
-                        string xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataNQ>(projectDataNQ);
-                        string jyxm = projectDataNQ.Jyxm;
+                        xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataNQ>(projectDataNQ);
                         break;
+                    case "UC":
+                        projectDataUC = JSONHelper.ConvertObject<ProjectDataUC>(projectData.Jcsj);
+                        xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataUC>(projectDataUC);
+                        break;
+                    case "F1":
+                        projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
+                        xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataF1>(projectDataF1);
+                        break;
+                    case "DC":
+                        projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
+                        xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataDC>(projectDataDC);
+                        break;
+                    case "C1":
+                        projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
+                        xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataC1>(projectDataC1);
+                        break;
+                    default:
+                        responseData.Code = "-12";
+                        responseData.Message = "不能識別的參數（Jyxm）";
+                        return saveResults.ToArray();
                 }
+                ///处理xmlb
+                
             }
             catch (ArgumentNullException)
             {
@@ -767,6 +790,6 @@ namespace MotorvehicleInspectionSystem.Controllers
 
 
 
-       
+
     }
 }
