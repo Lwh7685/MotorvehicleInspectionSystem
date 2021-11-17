@@ -21,6 +21,7 @@ using log4net.Repository;
 using MotorvehicleInspectionSystem.Log;
 using log4net;
 using log4net.Config;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace MotorvehicleInspectionSystem
 {
@@ -56,6 +57,16 @@ namespace MotorvehicleInspectionSystem
             Repository = LogManager.CreateRepository("MotorvehicleInspectionSystem");//项目名称
             XmlConfigurator.Configure(Repository, new FileInfo("log4net.config"));//指定配置文件，
 
+            //services.Configure<KestrelServerOptions>(options =>
+            //{
+            //    // Set the limit to 256 MB
+            //    options.Limits.MaxRequestBodySize = 268435456;
+            //});
+            //services.Configure<IISServerOptions>(options =>
+            //{
+            //    options.MaxRequestBodySize = 1073741822;
+
+            //});
             services.AddControllers().AddNewtonsoftJson(options =>
             {
                 // 忽略循环引用
