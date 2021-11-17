@@ -20,7 +20,7 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// <summary>
         /// 项目编号
         /// </summary>
-        public string Xmbh { get; set; }
+        public string Jcxm { get; set; }
         /// <summary>
         /// 项目名称
         /// </summary>

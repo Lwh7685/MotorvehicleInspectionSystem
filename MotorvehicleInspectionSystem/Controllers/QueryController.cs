@@ -181,7 +181,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="requestData">接口请求的参数</param>
         /// <param name="responseData">接口响应的参数，可改变的</param>
         /// <returns>收费条目的集合</returns>
-        public ChargeItem[] LYYDJKR004(RequestData requestData, ResponseData responseData)
+        public ChargeItem[] LYYDJKR004(ResponseData responseData)
         {
             List<ChargeItem> chargeItems = new List<ChargeItem>();
             try
@@ -230,7 +230,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                         //按流水号查询
-                        string sql = "select * from BaseInfo_Net tn,BaseInfo_Hand th where tn.lsh=th.Lsh ";
+                        string sql = "select *,'20200110165801' as Hjdlsj from BaseInfo_Net tn,BaseInfo_Hand th where tn.lsh=th.Lsh ";
                         if (queryVehicleDetailsR005.Lsh != "" && !(queryVehicleDetailsR005.Lsh is null))
                         {
                             sql += " and tn.Lsh ='" + queryVehicleDetailsR005.Lsh.Trim().Replace("'", "").Replace("-", "") + "'";
@@ -349,7 +349,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                         case "C1":
                                         case "DC":
                                             sql = "select  ROW_NUMBER()OVER(ORDER BY (select 0)) as id ";
-                                            sql += " , dalb as xmbh,(select mc from jscscode where fl='83' and dm=dalb ) as xmmc";
+                                            sql += " , dalb as jcxm,(select mc from jscscode where fl='83' and dm=dalb ) as xmmc";
                                             sql += " ,lsh,'" + jccs + "' as jccs,'" + ajywlb + "' as ajywlb,'" + hjywlb + "' as hjywlb";
                                             sql += " ,jcxh";
                                             sql += " ,jcry_01";
@@ -371,28 +371,32 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 }
                                 else if (ztS == "0")
                                 {
-                                    InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006();
-                                    inspectionItemsR006.Lsh = queryByLSH.Lsh;
-                                    inspectionItemsR006.Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
-                                    inspectionItemsR006.Ajywlb = ajywlb;
-                                    inspectionItemsR006.Hjywlb = hjywlb;
-                                    inspectionItemsR006.Jczt = "未检";
-                                    inspectionItemsR006.Xmbh = jcxmS;
-                                    inspectionItemsR006.ID = id;
-                                    inspectionItemsR006.Xmmc = dbAj.QueryForObject<DataDictionary>("select * from jscscode where fl='83' and dm='" + jcxmS + "'", null).Mc;
+                                    InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
+                                    {
+                                        Lsh = queryByLSH.Lsh,
+                                        Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
+                                        Ajywlb = ajywlb,
+                                        Hjywlb = hjywlb,
+                                        Jczt = "未检",
+                                        Jcxm = jcxmS,
+                                        ID = id,
+                                        Xmmc = dbAj.QueryForObject<DataDictionary>("select * from jscscode where fl='83' and dm='" + jcxmS + "'", null).Mc
+                                    };
                                     inspectionItemsR006s.Add(inspectionItemsR006);
                                 }
                                 else if (ztS == "2")
                                 {
-                                    InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006();
-                                    inspectionItemsR006.Lsh = queryByLSH.Lsh;
-                                    inspectionItemsR006.Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
-                                    inspectionItemsR006.Jczt = "正在检测";
-                                    inspectionItemsR006.Xmbh = jcxmS;
-                                    inspectionItemsR006.Ajywlb = ajywlb;
-                                    inspectionItemsR006.Hjywlb = hjywlb;
-                                    inspectionItemsR006.ID = id;
-                                    inspectionItemsR006.Xmmc = dbAj.QueryForObject<DataDictionary>("select * from jscscode where fl='83' and dm='" + jcxmS + "'", null).Mc;
+                                    InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
+                                    {
+                                        Lsh = queryByLSH.Lsh,
+                                        Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
+                                        Jczt = "正在检测",
+                                        Jcxm = jcxmS,
+                                        Ajywlb = ajywlb,
+                                        Hjywlb = hjywlb,
+                                        ID = id,
+                                        Xmmc = dbAj.QueryForObject<DataDictionary>("select * from jscscode where fl='83' and dm='" + jcxmS + "'", null).Mc
+                                    };
                                     inspectionItemsR006s.Add(inspectionItemsR006);
                                 }
                                 else
@@ -503,7 +507,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="requestData">接口请求的参数</param>
         /// <param name="responseData">接口响应的参数，可改变的</param>
         /// <returns></returns>
-        public InCar[] LYYDJKR009(RequestData requestData, ResponseData responseData)
+        public InCar[] LYYDJKR009(ResponseData responseData)
         {
             List<InCar> inCars = new List<InCar>();
             if (VehicleInspectionController.SyUb == "")
@@ -643,7 +647,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         {
             List<ArtificialProjectR016> artificialProjectR016s = new List<ArtificialProjectR016>();
             ArtificialProjectR016 artificialProjectR016 = new ArtificialProjectR016();
-            string sql = "";
+            string sql;
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
@@ -838,7 +842,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             responseData.Code = "1";
             responseData.Message = "SUCCESS";
             return artificialProjectR016s.ToArray();
-        } 
+        }
 
 
 
@@ -851,7 +855,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         public InspectionPhotoR017[] LYYDJKR017(RequestData requestData, ResponseData responseData)
         {
             List<InspectionPhotoR017> inspectionPhotoR017s = new List<InspectionPhotoR017>();
-            string sql = "";
+            string sql;
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
@@ -1032,7 +1036,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         {
             List<ArtificialProjectR016> artificialProjectR016s = new List<ArtificialProjectR016>();
             ArtificialProjectR016 artificialProjectR016 = new ArtificialProjectR016();
-            string sql = "";
+            string sql;
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
@@ -1240,12 +1244,12 @@ namespace MotorvehicleInspectionSystem.Controllers
         {
             List<ArtificialProjectR016> artificialProjectR016s = new List<ArtificialProjectR016>();
             ArtificialProjectR016 artificialProjectR016 = new ArtificialProjectR016();
-            string sql = "";
+            string sql;
             string mrhgStr;
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                
+
                 if (queryCriteria.Ajywlb == "" || queryCriteria.Ajywlb is null)
                 {
                     responseData.Code = "-1";
@@ -1281,7 +1285,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             case "NQ":
                                 sql = " select ROW_NUMBER()OVER(ORDER BY (select 0)) as id  ";
-                                sql += " ,'"+wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
+                                sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
                                 sql += " ,mc as Xmms,'1' as Sycx ";
@@ -1304,8 +1308,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " where t2.Fl = '6' order by Sycx desc, itemdm ";
                                 break;
                             case "F1":
-                                sql = " select stuff((SELECT ','+itemdm FROM [dbo].[tb_cartypeanditemdm] where cartype='"+wjcx +"' and fldm='1'  FOR XML PATH('')),1,1,'')";
-                                mrhgStr = dbAj.ExecuteScalar(sql , null).ToString();
+                                sql = " select stuff((SELECT ','+itemdm FROM [dbo].[tb_cartypeanditemdm] where cartype='" + wjcx + "' and fldm='1'  FOR XML PATH('')),1,1,'')";
+                                mrhgStr = dbAj.ExecuteScalar(sql, null).ToString();
                                 sql = " select ROW_NUMBER()OVER(ORDER BY (select 0)) as id  ";
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";

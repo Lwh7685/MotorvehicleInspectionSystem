@@ -518,7 +518,9 @@ namespace MotorvehicleInspectionSystem.Models
         ///送检人身份证号
         ///</summary>
         public string Sjrsfzh { get; set; }
-
-
+        /// <summary>
+        /// 环检登录时间  yyyyMMddHHmmss
+        /// </summary>
+        public string Hjdlsj { get; set; }
     }
 }

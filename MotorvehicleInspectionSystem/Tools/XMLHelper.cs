@@ -22,7 +22,7 @@ namespace MotorvehicleInspectionSystem.Tools
         {
             using (System.IO.StringWriter sw = new Utf8StringWriter())
             {
-                Type t = obj.GetType();
+                //Type t = obj.GetType();
                 XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
                 ////不要命名空间
                 ns.Add(string.Empty, string.Empty);
@@ -48,7 +48,7 @@ namespace MotorvehicleInspectionSystem.Tools
                     return serializer.Deserialize(sr) as T;
                 }
             }
-            catch (Exception ex)
+            catch 
             {
                 return null;
             }
@@ -59,15 +59,13 @@ namespace MotorvehicleInspectionSystem.Tools
             try
             {
                 Root r = new Root();
-                Body b = new Body();
-                b.vehispara = obj ;
-                r.body = b;
+                r.vehispara = obj;
                 //转换
                 string strrxml = XmlSerialize<Root>(r);
                 //返回
                 return strrxml;
             }
-            catch (Exception ex)
+            catch 
             {
                 return null;
             }
@@ -87,16 +85,30 @@ namespace MotorvehicleInspectionSystem.Tools
             else
                 return xmlnode.InnerText;
         }
-    }
-    public class Root
-    {
-        public Body body { get; set; }
+        /// <summary>
+        /// 添加节点
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="nodeName"></param>
+        /// <param name="nodeValue"></param>
+        public static void AddNode(System.Xml.XmlElement parent, string nodeName, string nodeValue)
+        {
+            System.Xml.XmlElement newNode;
+            newNode = parent.OwnerDocument.CreateElement(nodeName);
+            newNode.InnerText = nodeValue;
+            parent.AppendChild(newNode);
+            parent.AppendChild(parent.OwnerDocument.CreateTextNode(System.Environment.NewLine));
+        }
     }
     //注意！body类的vehispara的类型是dynamic 所以需要使用XmlInclude表示body可以解析的类型
     [System.Xml.Serialization.XmlInclude(typeof(ProjectStartW010))]
     [System.Xml.Serialization.XmlInclude(typeof(ProjectEndW012))]
     [System.Xml.Serialization.XmlInclude(typeof(ProjectDataNQ))]
-    public partial class Body
+    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataUC))]
+    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataF1))]
+    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataDC))]
+    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataC1))]
+    public partial class Root
     {
         public dynamic vehispara { get; set; }//接受动态业务类型 
     }

@@ -94,5 +94,15 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 环保登陆时间 环保上传的唯一标识
         /// </summary>
         public string Hjdlsj { get; set; }
+
+        //后加的参数，用于手机上传视频信息，不在后台截取
+        /// <summary>
+        /// 录像保存地址
+        /// </summary>
+        public string Lxdz { get; set; }
+        /// <summary>
+        /// 录像保存标志  0=无视频，由后台截取  1=有视频，文件已上传
+        /// </summary>
+        public string Lxbz { get; set; }
     }
 }

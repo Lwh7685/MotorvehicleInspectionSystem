@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.Response;
@@ -6,6 +7,7 @@ using MotorvehicleInspectionSystem.Tools;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -115,7 +117,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         break;
                     //查询收费条目
                     case "LYYDJKR004":
-                        ChargeItem[] chargeItems = QC.LYYDJKR004(requestData, responseData);
+                        ChargeItem[] chargeItems = QC.LYYDJKR004(responseData);
                         responseData.Body = chargeItems;
                         break;
                     case "LYYDJKR005":
@@ -135,7 +137,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = uploadAVIs;
                         break;
                     case "LYYDJKR009":
-                        InCar[] inCars = QC.LYYDJKR009(requestData, responseData);
+                        InCar[] inCars = QC.LYYDJKR009(responseData);
                         responseData.Body = inCars;
                         break;
                     case "LYYDJKR011":
@@ -183,6 +185,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 responseData.Message = "数据格式不规范（jsonData）";
             }
             responseData.RowNum = responseData.Body.Count();
+            responseData.Message = responseData.Message + "(" + jkId + ")";
             return responseData;
         }
         /// <summary>
@@ -193,7 +196,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="jsonData">Json数据</param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<object> Write(string jkId, string zdbs,[FromBody] string  jsonData)
+        public ActionResult<object> Write(string jkId, string zdbs, [FromBody] string jsonData)
         {
             responseData.Body = new object[0];
             try
@@ -221,11 +224,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                     return responseData;
                 }
                 //jsonData合法
-                requestData =JSONHelper.DeserializeJson<RequestData>(jsonData);
+                requestData = JSONHelper.DeserializeJson<RequestData>(jsonData);
                 //将文本追加到文件末尾
                 using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"D:\WriteLines2.txt", true))
                 {
-                    file.WriteLine(DateTime.Now .ToString ("yyyy-MM-dd HH:mm:ss")+"----" +jkId+"----"+jsonData +"/n");
+                    file.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "----" + jkId + "----" + jsonData + "/n");
 
                 }
                 switch (jkId)
@@ -253,7 +256,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         SaveResult[] saveResults009 = WC.LYYDJKW009(requestData, responseData);
                         responseData.Body = saveResults009;
                         break;
-                        //检验项目开始
+                    //检验项目开始
                     case "LYYDJKW010":
                         SaveResult[] saveResults010 = WC.LYYDJKW010(requestData, responseData, zdbs);
                         responseData.Body = saveResults010;
@@ -264,7 +267,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         break;
                     //检验项目结束
                     case "LYYDJKW012":
-                        SaveResult[] saveResults012 = WC.LYYDJKW012(requestData, responseData , zdbs);
+                        SaveResult[] saveResults012 = WC.LYYDJKW012(requestData, responseData, zdbs);
                         responseData.Body = saveResults012;
                         break;
                     default:
@@ -284,7 +287,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                 responseData.Message = "数据格式不规范（jsonData）";
             }
             responseData.RowNum = responseData.Body.Count();
+            responseData.Message = responseData.Message + "(" + jkId + ")";
             return responseData;
-        }        
+        }
     }
 }

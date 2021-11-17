@@ -63,7 +63,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             catch (ArgumentNullException ex)
             {
                 responseData.Code = "-1";
-                responseData.Message = "用户名或密码错误";
+                responseData.Message = "用户名或密码错误---" + ex.Message;
             }
             catch (Exception e)
             {
@@ -90,11 +90,13 @@ namespace MotorvehicleInspectionSystem.Controllers
                 foreach (Object o in requestData.Body)
                 {
                     ElectronicSignatureW006 electronicSignatureW006 = JSONHelper.ConvertObject<ElectronicSignatureW006>(o);
-                    SaveResult saveResult = new SaveResult();
-                    saveResult.ID = electronicSignatureW006.ID;
-                    saveResult.Jkbh = "LYYDJKW006";
-                    saveResult.Ryxm = electronicSignatureW006.Ryxm;
-                    saveResult.Jcxm = electronicSignatureW006.Jcxm;
+                    SaveResult saveResult = new SaveResult
+                    {
+                        ID = electronicSignatureW006.ID,
+                        Jkbh = "LYYDJKW006",
+                        Ryxm = electronicSignatureW006.Ryxm,
+                        Jcxm = electronicSignatureW006.Jcxm
+                    };
                     if (electronicSignatureW006.Bcaj == "1")
                     {
                         if (VehicleInspectionController.SyAj == "1")
@@ -344,7 +346,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 //保存
                                 sql = "INSERT INTO [dbo].[UpLoad_AVI_XML] ";
                                 sql += " ([SXH],[jcbh],[HPZL],[hphm],[JCXZ],[jcrq],[TimS],[jklx],[xmbh] ";
-                                sql += " ,[JcKsSj],[JcJsSj],[clpp],[czdw],[upload_OK],[InBz_01],[InBz_05]) VALUES( ";
+                                sql += " ,[JcKsSj],[JcJsSj],[clpp],[czdw],[upload_OK],[InBz_01],[InBz_02]) VALUES( ";
                                 sql += " '" + inspectionVideoW008.Jcxh + "',";// (< SXH, varchar(25),>
                                 sql += " '" + inspectionVideoW008.Lsh + "',";// ,< jcbh, varchar(32),>
                                 sql += " '" + inspectionVideoW008.Hpzl + "',";// ,< HPZL, varchar(24),>
@@ -358,9 +360,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " '" + inspectionVideoW008.Jcjssj + "',";// ,< JcJsSj, varchar(24),>
                                 sql += " '" + inspectionVideoW008.Clpp + "',";// ,< clpp, varchar(48),>
                                 sql += " '" + inspectionVideoW008.Czdw + "',";// ,< czdw, varchar(125),>
-                                sql += " '0',";// ,< upload_OK, varchar(4),>
+                                sql += " '" + inspectionVideoW008.Lxbz + "',";// ,< upload_OK, varchar(4),>
                                 sql += " '" + inspectionVideoW008.Lxxx + "',";// ,< InBz_01, varchar(72),>
-                                sql += " '')";// ,< InBz_05, varchar(16),>)";
+                                sql += " '" + inspectionVideoW008.Lxdz + "')";// ,< InBz_02, varchar(16),>)";
                                 dbAj.ExecuteNonQuery(sql, null);
                                 saveResult.BcjgAj = "success";
                             }
@@ -422,6 +424,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
                     saveResults.Add(saveResult);
                 }
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
             }
             catch (ArgumentNullException)
             {
@@ -589,51 +593,559 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <returns></returns>
         public SaveResult[] LYYDJKW011(RequestData requestData, ResponseData responseData, string zdbs)
         {
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlElement xmlNode;
             List<SaveResult> saveResults = new List<SaveResult>();
-            string xmlDocStr;
             ProjectDataNQ projectDataNQ;
             ProjectDataUC projectDataUC;
             ProjectDataF1 projectDataF1;
             ProjectDataDC projectDataDC;
             ProjectDataC1 projectDataC1;
+            ProjectDataItem[] projectDataItems;
+            List<string> jcxmAndPj = new List<string>();
+            string jcBz;
+            string ajjkxlh;
+            string sqlDelete;
+            string sqlInsert;
+            List<string> bhgXm = new List<string>();
+            string jcpj = "1";
             try
             {
                 ProjectData projectData = JSONHelper.ConvertObject<ProjectData>(requestData.Body[0]);
+                //安检数据库连接
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                //环检数据库连接
+                DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                string xmlDocStr;
                 //实例化各项目检测类
                 switch (projectData.Jyxm)
                 {
                     case "NQ":
                         projectDataNQ = JSONHelper.ConvertObject<ProjectDataNQ>(projectData.Jcsj);
+                        projectDataItems = projectDataNQ.Xmlb;
+                        ajjkxlh = projectDataNQ.AjJkxlh;
                         xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataNQ>(projectDataNQ);
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                        foreach (ProjectDataItem projectDataItem in projectDataItems)
+                        {
+                            switch (projectDataItem.Xmdm)
+                            {
+                                case "01":
+                                    XMLHelper.AddNode(xmlNode, "rlwcx", projectDataItem.Xmpj);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //拼接检验结果
+                            jcxmAndPj.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmpj);
+                            //不合格项目
+                            if (projectDataItem.Xmpj == "2")
+                            {
+                                bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                                jcpj = "-1";
+                            }
+                        }
+                        sqlDelete = "delete from [dbo].[JcData_RG] where lsh ='" + projectDataNQ.Lsh + "' and jccs ='" + projectDataNQ.Jccs + "' and dalb ='NQ'";
+                        sqlInsert = "INSERT INTO [dbo].[JcData_RG] " +
+                            " ([lsh],[hpzl],[hphm],[jccs],[jcdate],[kstime],[jstime],[jcpj],[dalb],[xmbh],[Bz1],[Bz2],[Bz3],[Bz4],[Bz5],[bz6],[bz7],[bz8],[bz9],[bz10],[jcxh],[jcry_01],[jcry_02]) VALUES( ";
+                        sqlInsert += " '" + projectDataNQ.Lsh + "',";//                      (< lsh, varchar(32),>
+                        sqlInsert += " '" + projectDataNQ.Hpzl + "',";// ,< hpzl, varchar(20),>
+                        sqlInsert += " '" + projectDataNQ.Hphm + "',";// ,< hphm, varchar(15),>
+                        sqlInsert += " '" + projectDataNQ.Jccs + "',";// ,< jccs, int,>
+                        sqlInsert += " CONVERT(varchar(20),GETDATE(),23),";// ,< jcdate, varchar(16),>
+                        if (projectDataNQ.Jckssj != "")
+                        {
+                            sqlInsert += " '" + projectDataNQ.Jckssj + "',";// ,< kstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< kstime, varchar(16),>
+                        if (projectDataNQ.Jcjssj != "")
+                        {
+                            sqlInsert += " '" + projectDataNQ.Jcjssj + "',";// ,< jstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< jstime, varchar(16),>
+                        sqlInsert += " '" + jcpj + "',";// ,< jcpj, varchar(2),>
+                        sqlInsert += " 'NQ',";// ,< dalb, varchar(2),>
+                        sqlInsert += " '" + String.Join(";", jcxmAndPj.ToArray()) + "',";// ,< xmbh, varchar(400),>
+                        sqlInsert += " '" + String.Join(";", bhgXm.ToArray()) + "',";// ,< Bz1, text,>
+                        sqlInsert += " '',";// ,< Bz2, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz3, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz4, varchar(max),>
+                        sqlInsert += " '',";// ,< Bz5, varchar(200),>
+                        sqlInsert += " '',";// ,< bz6, varchar(200),>
+                        sqlInsert += " '',";// ,< bz7, varchar(200),>
+                        sqlInsert += " '',";// ,< bz8, varchar(200),>
+                        sqlInsert += " '',";// ,< bz9, varchar(200),>
+                        sqlInsert += " '',";// ,< bz10, varchar(200),>
+                        sqlInsert += " '" + projectDataNQ.Jcxh + "',";// ,< jcxh, varchar(2),>
+                        sqlInsert += " '" + projectDataNQ.Lwcxjyy + "',";// ,< jcry_01, varchar(8),>
+                        sqlInsert += " '')";// ,< jcry_02, varchar(8),>)
                         break;
                     case "UC":
                         projectDataUC = JSONHelper.ConvertObject<ProjectDataUC>(projectData.Jcsj);
+                        projectDataItems = projectDataUC.Xmlb;
+                        ajjkxlh = projectDataUC.AjJkxlh;
                         xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataUC>(projectDataUC);
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                        foreach (ProjectDataItem projectDataItem in projectDataItems)
+                        {
+                            switch (projectDataItem.Xmdm)
+                            {
+                                case "02":
+                                    XMLHelper.AddNode(xmlNode, "rhplx", projectDataItem.Xmpj);
+                                    break;
+                                case "03":
+                                    XMLHelper.AddNode(xmlNode, "rppxh", projectDataItem.Xmpj);
+                                    break;
+                                case "04":
+                                    XMLHelper.AddNode(xmlNode, "rvin", projectDataItem.Xmpj);
+                                    break;
+                                case "05":
+                                    XMLHelper.AddNode(xmlNode, "rfdjh", projectDataItem.Xmpj);
+                                    break;
+                                case "06":
+                                    XMLHelper.AddNode(xmlNode, "rcsys", projectDataItem.Xmpj);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //拼接检验结果
+                            jcxmAndPj.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmpj);
+                            //不合格项目
+                            if (projectDataItem.Xmpj == "2")
+                            {
+                                bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                                jcpj = "-1";
+                            }
+                        }
+                        jcBz = projectDataUC.Bz;
+                        sqlDelete = "delete from [dbo].[JcData_RG] where lsh ='" + projectDataUC.Lsh + "' and jccs ='" + projectDataUC.Jccs + "' and dalb ='UC'";
+                        sqlInsert = "INSERT INTO [dbo].[JcData_RG] " +
+                            " ([lsh],[hpzl],[hphm],[jccs],[jcdate],[kstime],[jstime],[jcpj],[dalb],[xmbh],[Bz1],[Bz2],[Bz3],[Bz4],[Bz5],[bz6],[bz7],[bz8],[bz9],[bz10],[jcxh],[jcry_01],[jcry_02]) VALUES( ";
+                        sqlInsert += " '" + projectDataUC.Lsh + "',";//                      (< lsh, varchar(32),>
+                        sqlInsert += " '" + projectDataUC.Hpzl + "',";// ,< hpzl, varchar(20),>
+                        sqlInsert += " '" + projectDataUC.Hphm + "',";// ,< hphm, varchar(15),>
+                        sqlInsert += " '" + projectDataUC.Jccs + "',";// ,< jccs, int,>
+                        sqlInsert += " CONVERT(varchar(20),GETDATE(),23),";// ,< jcdate, varchar(16),>
+                        if (projectDataUC.Jckssj != "")
+                        {
+                            sqlInsert += " '" + projectDataUC.Jckssj + "',";// ,< kstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< kstime, varchar(16),>
+                        if (projectDataUC.Jcjssj != "")
+                        {
+                            sqlInsert += " '" + projectDataUC.Jcjssj + "',";// ,< jstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< jstime, varchar(16),>
+                        sqlInsert += " '" + jcpj + "',";// ,< jcpj, varchar(2),>
+                        sqlInsert += " 'UC',";// ,< dalb, varchar(2),>
+                        sqlInsert += " '" + String.Join(";", jcxmAndPj.ToArray()) + "',";// ,< xmbh, varchar(400),>
+                        sqlInsert += " '" + String.Join(";", bhgXm.ToArray()) + "',";// ,< Bz1, text,>                   
+                        sqlInsert += " '',";// ,< Bz2, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz3, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz4, varchar(max),>
+                        sqlInsert += " '" + projectDataUC.Bz + "',";// ,< Bz5, varchar(200),>
+                        sqlInsert += " '',";// ,< bz6, varchar(200),>
+                        sqlInsert += " '',";// ,< bz7, varchar(200),>
+                        sqlInsert += " '',";// ,< bz8, varchar(200),>
+                        sqlInsert += " '',";// ,< bz9, varchar(200),>
+                        sqlInsert += " '',";// ,< bz10, varchar(200),>
+                        sqlInsert += " '" + projectDataUC.Jcxh + "',";// ,< jcxh, varchar(2),>
+                        sqlInsert += " '" + projectDataUC.Wgjcjyy + "',";// ,< jcry_01, varchar(8),>
+                        sqlInsert += " '')";// ,< jcry_02, varchar(8),>)
                         break;
                     case "F1":
                         projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
+                        projectDataItems = projectDataF1.Xmlb;
+                        ajjkxlh = projectDataF1.AjJkxlh;
                         xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataF1>(projectDataF1);
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                        foreach (ProjectDataItem projectDataItem in projectDataItems)
+                        {
+                            switch (projectDataItem.Xmdm)
+                            {
+                                case "07":
+                                    XMLHelper.AddNode(xmlNode, "rwkcc", projectDataItem.Xmpj);
+                                    break;
+                                case "08":
+                                    XMLHelper.AddNode(xmlNode, "rzj", projectDataItem.Xmpj);
+                                    break;
+                                case "09":
+                                    XMLHelper.AddNode(xmlNode, "rhdzrs", projectDataItem.Xmpj);
+                                    break;
+                                case "10":
+                                    XMLHelper.AddNode(xmlNode, "rlbgd", projectDataItem.Xmpj);
+                                    break;
+                                case "11":
+                                    XMLHelper.AddNode(xmlNode, "rhzgbthps", projectDataItem.Xmpj);
+                                    break;
+                                case "12":
+                                    XMLHelper.AddNode(xmlNode, "rkcyjck", projectDataItem.Xmpj);
+                                    break;
+                                case "13":
+                                    XMLHelper.AddNode(xmlNode, "rkccktd", projectDataItem.Xmpj);
+                                    break;
+                                case "14":
+                                    XMLHelper.AddNode(xmlNode, "rhx", projectDataItem.Xmpj);
+                                    break;
+                                case "15":
+                                    XMLHelper.AddNode(xmlNode, "rcswg", projectDataItem.Xmpj);
+                                    break;
+                                case "16":
+                                    XMLHelper.AddNode(xmlNode, "rwgbs", projectDataItem.Xmpj);
+                                    break;
+                                case "17":
+                                    XMLHelper.AddNode(xmlNode, "rwbzm", projectDataItem.Xmpj);
+                                    break;
+                                case "18":
+                                    XMLHelper.AddNode(xmlNode, "rlt", projectDataItem.Xmpj);
+                                    break;
+                                case "19":
+                                    XMLHelper.AddNode(xmlNode, "rhpaz", projectDataItem.Xmpj);
+                                    break;
+                                case "20":
+                                    XMLHelper.AddNode(xmlNode, "rjzgj", projectDataItem.Xmpj);
+                                    break;
+                                case "21":
+                                    XMLHelper.AddNode(xmlNode, "rqcaqd", projectDataItem.Xmpj);
+                                    break;
+                                case "22":
+                                    XMLHelper.AddNode(xmlNode, "rsjp", projectDataItem.Xmpj);
+                                    break;
+                                case "23":
+                                    XMLHelper.AddNode(xmlNode, "rmhq", projectDataItem.Xmpj);
+                                    break;
+                                case "24":
+                                    XMLHelper.AddNode(xmlNode, "rxsjly", projectDataItem.Xmpj);
+                                    break;
+                                case "25":
+                                    XMLHelper.AddNode(xmlNode, "rcsfgbs", projectDataItem.Xmpj);
+                                    break;
+                                case "26":
+                                    XMLHelper.AddNode(xmlNode, "rclwbzb", projectDataItem.Xmpj);
+                                    break;
+                                case "27":
+                                    XMLHelper.AddNode(xmlNode, "rchfh", projectDataItem.Xmpj);
+                                    break;
+                                case "28":
+                                    XMLHelper.AddNode(xmlNode, "ryjc", projectDataItem.Xmpj);
+                                    break;
+                                case "29":
+                                    XMLHelper.AddNode(xmlNode, "rjjx", projectDataItem.Xmpj);
+                                    break;
+                                case "30":
+                                    XMLHelper.AddNode(xmlNode, "rxsgn", projectDataItem.Xmpj);
+                                    break;
+                                case "31":
+                                    XMLHelper.AddNode(xmlNode, "rfbs", projectDataItem.Xmpj);
+                                    break;
+                                case "32":
+                                    XMLHelper.AddNode(xmlNode, "rfzzd", projectDataItem.Xmpj);
+                                    break;
+                                case "33":
+                                    XMLHelper.AddNode(xmlNode, "rpszdq", projectDataItem.Xmpj);
+                                    break;
+                                case "34":
+                                    XMLHelper.AddNode(xmlNode, "rjxtz", projectDataItem.Xmpj);
+                                    break;
+                                case "35":
+                                    XMLHelper.AddNode(xmlNode, "rjjqd", projectDataItem.Xmpj);
+                                    break;
+                                case "36":
+                                    XMLHelper.AddNode(xmlNode, "rfdjcmh", projectDataItem.Xmpj);
+                                    break;
+                                case "37":
+                                    XMLHelper.AddNode(xmlNode, "rsddd", projectDataItem.Xmpj);
+                                    break;
+                                case "38":
+                                    XMLHelper.AddNode(xmlNode, "rfzdtb", projectDataItem.Xmpj);
+                                    break;
+                                case "39":
+                                    XMLHelper.AddNode(xmlNode, "rxcbz", projectDataItem.Xmpj);
+                                    break;
+                                case "40":
+                                    XMLHelper.AddNode(xmlNode, "rwxhwbz", projectDataItem.Xmpj);
+                                    break;
+                                case "41":
+                                    XMLHelper.AddNode(xmlNode, "rjsqglss", projectDataItem.Xmpj);
+                                    break;
+                                case "42":
+                                    XMLHelper.AddNode(xmlNode, "ztcjrfzzz", projectDataItem.Xmpj);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //拼接检验结果
+                            jcxmAndPj.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmpj);
+                            //不合格项目
+                            if (projectDataItem.Xmpj == "2")
+                            {
+                                bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                                jcpj = "-1";
+                            }
+                        }
+                        jcBz = projectDataF1.Bz;
+                        sqlDelete = "delete from [dbo].[JcData_RG] where lsh ='" + projectDataF1.Lsh + "' and jccs ='" + projectDataF1.Jccs + "' and dalb ='F1'";
+                        sqlInsert = "INSERT INTO [dbo].[JcData_RG] " +
+                            " ([lsh],[hpzl],[hphm],[jccs],[jcdate],[kstime],[jstime],[jcpj],[dalb],[xmbh],[Bz1],[Bz2],[Bz3],[Bz4],[Bz5],[bz6],[bz7],[bz8],[bz9],[bz10],[jcxh],[jcry_01],[jcry_02]) VALUES( ";
+                        sqlInsert += " '" + projectDataF1.Lsh + "',";//                      (< lsh, varchar(32),>
+                        sqlInsert += " '" + projectDataF1.Hpzl + "',";// ,< hpzl, varchar(20),>
+                        sqlInsert += " '" + projectDataF1.Hphm + "',";// ,< hphm, varchar(15),>
+                        sqlInsert += " '" + projectDataF1.Jccs + "',";// ,< jccs, int,>
+                        sqlInsert += " CONVERT(varchar(20),GETDATE(),23),";// ,< jcdate, varchar(16),>
+                        if (projectDataF1.Jckssj != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Jckssj + "',";// ,< kstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< kstime, varchar(16),>
+                        if (projectDataF1.Jcjssj != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Jcjssj + "',";// ,< jstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< jstime, varchar(16),>
+                        sqlInsert += " '" + jcpj + "',";// ,< jcpj, varchar(2),>
+                        sqlInsert += " 'F1',";// ,< dalb, varchar(2),>
+                        sqlInsert += " '" + String.Join(";", jcxmAndPj.ToArray()) + "',";// ,< xmbh, varchar(400),>
+                        sqlInsert += " '" + String.Join(";", bhgXm.ToArray()) + "',";// ,< Bz1, text,>                   
+                        sqlInsert += " '',";// ,< Bz2, varchar(32),>
+                        if (projectDataF1.Cwkc != "" | projectDataF1.Cwkk != "" | projectDataF1.Cwkg != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Cwkc + "*" + projectDataF1.Cwkk + "*" + projectDataF1.Cwkg + "',";// ,< Bz3, varchar(32),>
+                        }
+                        else
+                            sqlInsert += " '',";// ,< Bz3, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz4, varchar(max),>
+                        sqlInsert += " '" + projectDataF1.Bz + "',";// ,< Bz5, varchar(200),>
+                        if (projectDataF1.Dczxlhwsd != "" | projectDataF1.Dcqtlhwsd != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Dczxlhwsd + "|" + projectDataF1.Dcqtlhwsd + "',";// ,< bz6, varchar(200),> 轮胎花纹深度
+                        }
+                        else if (projectDataF1.Gchwsd != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Gchwsd + "',";// ,< bz6, varchar(200),> 轮胎花纹深度
+                        }
+                        else
+                        {
+                            sqlInsert += " '',";// ,< bz6, varchar(200),> 轮胎花纹深度
+                        }
+                        sqlInsert += " '" + projectDataF1.Zj + "',";// ,< bz7, varchar(200),>
+                        sqlInsert += " '" + projectDataF1.Cxlbgd + "',";// ,< bz8, varchar(200),>
+                        if (projectDataF1.Yzzygdc != "" && projectDataF1.Zhzzygdc != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Yzzgd + "," + projectDataF1.Yzygd + "|" + projectDataF1.Zhzzgd + "," + projectDataF1.Zhzygd + "',";// ,< bz9, varchar(200),>对称部位高度差
+                        }
+                        else if (projectDataF1.Zhzzygdc != "")
+                        {
+                            sqlInsert += " '" + projectDataF1.Zhzzgd + "," + projectDataF1.Zhzygd + "',";// ,< bz9, varchar(200),>对称部位高度差
+                        }
+                        else
+                        {
+                            sqlInsert += " '',";// ,< bz9, varchar(200),>对称部位高度差
+                        }
+                        sqlInsert += " '',";// ,< bz10, varchar(200),>
+                        sqlInsert += " '" + projectDataF1.Jcxh + "',";// ,< jcxh, varchar(2),>
+                        sqlInsert += " '" + projectDataF1.Wgjcjyy + "',";// ,< jcry_01, varchar(8),>
+                        sqlInsert += " '')";// ,< jcry_02, varchar(8),>)
                         break;
                     case "DC":
                         projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
+                        projectDataItems = projectDataDC.Xmlb;
+                        ajjkxlh = projectDataDC.AjJkxlh;
                         xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataDC>(projectDataDC);
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                        foreach (ProjectDataItem projectDataItem in projectDataItems)
+                        {
+                            switch (projectDataItem.Xmdm)
+                            {
+                                case "43":
+                                    XMLHelper.AddNode(xmlNode, "rzxx", projectDataItem.Xmpj);
+                                    break;
+                                case "44":
+                                    XMLHelper.AddNode(xmlNode, "rcdx", projectDataItem.Xmpj);
+                                    break;
+                                case "45":
+                                    XMLHelper.AddNode(xmlNode, "rzdx", projectDataItem.Xmpj);
+                                    break;
+                                case "46":
+                                    XMLHelper.AddNode(xmlNode, "rybzsq", projectDataItem.Xmpj);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //拼接检验结果
+                            jcxmAndPj.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmpj);
+                            //不合格项目
+                            if (projectDataItem.Xmpj == "2")
+                            {
+                                bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                            }
+                        }
+                        jcBz = projectDataDC.Bz;
+                        sqlDelete = "delete from [dbo].[JcData_RG] where lsh ='" + projectDataDC.Lsh + "' and jccs ='" + projectDataDC.Jccs + "' and dalb ='DC'";
+                        sqlInsert = "INSERT INTO [dbo].[JcData_RG] " +
+                            " ([lsh],[hpzl],[hphm],[jccs],[jcdate],[kstime],[jstime],[jcpj],[dalb],[xmbh],[Bz1],[Bz2],[Bz3],[Bz4],[Bz5],[bz6],[bz7],[bz8],[bz9],[bz10],[jcxh],[jcry_01],[jcry_02]) VALUES( ";
+                        sqlInsert += " '" + projectDataDC.Lsh + "',";//                      (< lsh, varchar(32),>
+                        sqlInsert += " '" + projectDataDC.Hpzl + "',";// ,< hpzl, varchar(20),>
+                        sqlInsert += " '" + projectDataDC.Hphm + "',";// ,< hphm, varchar(15),>
+                        sqlInsert += " '" + projectDataDC.Jccs + "',";// ,< jccs, int,>
+                        sqlInsert += " CONVERT(varchar(20),GETDATE(),23),";// ,< jcdate, varchar(16),>
+                        if (projectDataDC.Jckssj != "")
+                        {
+                            sqlInsert += " '" + projectDataDC.Jckssj + "',";// ,< kstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< kstime, varchar(16),>
+                        if (projectDataDC.Jcjssj != "")
+                        {
+                            sqlInsert += " '" + projectDataDC.Jcjssj + "',";// ,< jstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< jstime, varchar(16),>
+                        sqlInsert += " '" + jcpj + "',";// ,< jcpj, varchar(2),>
+                        sqlInsert += " 'DC',";// ,< dalb, varchar(2),>
+                        sqlInsert += " '" + String.Join(";", jcxmAndPj.ToArray()) + "',";// ,< xmbh, varchar(400),>
+                        sqlInsert += " '" + String.Join(";", bhgXm.ToArray()) + "',";// ,< Bz1, text,>                   
+                        sqlInsert += " '',";// ,< Bz2, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz3, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz4, varchar(max),>
+                        sqlInsert += " '" + projectDataDC.Bz + "',";// ,< Bz5, varchar(200),>
+                        sqlInsert += " '',";// ,< bz6, varchar(200),>
+                        sqlInsert += " '',";// ,< bz7, varchar(200),>
+                        sqlInsert += " '',";// ,< bz8, varchar(200),>
+                        sqlInsert += " '',";// ,< bz9, varchar(200),>
+                        sqlInsert += " '" + projectDataDC.Fxpzdzyzdl + "',";// ,< bz10, varchar(200),>
+                        sqlInsert += " '" + projectDataDC.Jcxh + "',";// ,< jcxh, varchar(2),>
+                        sqlInsert += " '" + projectDataDC.Dpdtjyy + "',";// ,< jcry_01, varchar(8),>
+                        sqlInsert += " '" + projectDataDC.Ycy + "')";// ,< jcry_02, varchar(8),>)
                         break;
                     case "C1":
                         projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
+                        projectDataItems = projectDataC1.Xmlb;
+                        ajjkxlh = projectDataC1.AjJkxlh;
                         xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataC1>(projectDataC1);
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                        foreach (ProjectDataItem projectDataItem in projectDataItems)
+                        {
+                            switch (projectDataItem.Xmdm)
+                            {
+                                case "47":
+                                    XMLHelper.AddNode(xmlNode, "rzxxbj", projectDataItem.Xmpj);
+                                    break;
+                                case "48":
+                                    XMLHelper.AddNode(xmlNode, "rcdxbj", projectDataItem.Xmpj);
+                                    break;
+                                case "49":
+                                    XMLHelper.AddNode(xmlNode, "rxsxbj", projectDataItem.Xmpj);
+                                    break;
+                                case "50":
+                                    XMLHelper.AddNode(xmlNode, "rzdxbj", projectDataItem.Xmpj);
+                                    break;
+                                case "51":
+                                    XMLHelper.AddNode(xmlNode, "rqtbj", projectDataItem.Xmpj);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //拼接检验结果
+                            jcxmAndPj.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmpj);
+                            //不合格项目
+                            if (projectDataItem.Xmpj == "2")
+                            {
+                                bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                            }
+                        }
+                        jcBz = projectDataC1.Bz;
+                        sqlDelete = "delete from [dbo].[JcData_RG] where lsh ='" + projectDataC1.Lsh + "' and jccs ='" + projectDataC1.Jccs + "' and dalb ='C1'";
+                        sqlInsert = "INSERT INTO [dbo].[JcData_RG] " +
+                            " ([lsh],[hpzl],[hphm],[jccs],[jcdate],[kstime],[jstime],[jcpj],[dalb],[xmbh],[Bz1],[Bz2],[Bz3],[Bz4],[Bz5],[bz6],[bz7],[bz8],[bz9],[bz10],[jcxh],[jcry_01],[jcry_02]) VALUES( ";
+                        sqlInsert += " '" + projectDataC1.Lsh + "',";//                      (< lsh, varchar(32),>
+                        sqlInsert += " '" + projectDataC1.Hpzl + "',";// ,< hpzl, varchar(20),>
+                        sqlInsert += " '" + projectDataC1.Hphm + "',";// ,< hphm, varchar(15),>
+                        sqlInsert += " '" + projectDataC1.Jccs + "',";// ,< jccs, int,>
+                        sqlInsert += " CONVERT(varchar(20),GETDATE(),23),";// ,< jcdate, varchar(16),>
+                        if (projectDataC1.Jckssj != "")
+                        {
+                            sqlInsert += " '" + projectDataC1.Jckssj + "',";// ,< kstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< kstime, varchar(16),>
+                        if (projectDataC1.Jcjssj != "")
+                        {
+                            sqlInsert += " '" + projectDataC1.Jcjssj + "',";// ,< jstime, varchar(16),>
+                        }
+                        else
+                            sqlInsert += " '" + DateTime.Now.ToString("yyyyMmddHHmmss") + "',";// ,< jstime, varchar(16),>
+                        sqlInsert += " '" + jcpj + "',";// ,< jcpj, varchar(2),>
+                        sqlInsert += " 'C1',";// ,< dalb, varchar(2),>
+                        sqlInsert += " '" + String.Join(";", jcxmAndPj.ToArray()) + "',";// ,< xmbh, varchar(400),>
+                        sqlInsert += " '" + String.Join(";", bhgXm.ToArray()) + "',";// ,< Bz1, text,>                   
+                        sqlInsert += " '',";// ,< Bz2, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz3, varchar(32),>
+                        sqlInsert += " '',";// ,< Bz4, varchar(max),>
+                        sqlInsert += " '" + projectDataC1.Bz + "',";// ,< Bz5, varchar(200),>
+                        sqlInsert += " '',";// ,< bz6, varchar(200),>
+                        sqlInsert += " '',";// ,< bz7, varchar(200),>
+                        sqlInsert += " '',";// ,< bz8, varchar(200),>
+                        sqlInsert += " '',";// ,< bz9, varchar(200),>
+                        sqlInsert += " '',";// ,< bz10, varchar(200),>
+                        sqlInsert += " '" + projectDataC1.Jcxh + "',";// ,< jcxh, varchar(2),>
+                        sqlInsert += " '" + projectDataC1.Dpjcjyy + "',";// ,< jcry_01, varchar(8),>
+                        sqlInsert += " '" + projectDataC1.Ycy + "')";// ,< jcry_02, varchar(8),>)
                         break;
                     default:
                         responseData.Code = "-12";
                         responseData.Message = "不能識別的參數（Jyxm）";
                         return saveResults.ToArray();
                 }
-                ///处理xmlb
-                
-            }
-            catch (ArgumentNullException)
-            {
+
+                xmlDocStr = xmlDocument.InnerXml.ToString();
+                xmlDocument.Save(@"D:\TestXml\" + projectData.Jyxm + ".xml");
+                ////调用接口
+                //string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", ajjkxlh, "18C80", xmlDocStr);
+                ////分析返回结果
+                //XmlDocument doc = new XmlDocument();
+                //doc.LoadXml(resultXml);
+                //String code = XMLHelper.GetNodeValue(doc, "code");
+                //if (code == "1")
+                //{
+                //    //成功时写日志
+                //    //记录项目开始
+                //    if (saveDetectionProcess("1", projectData, zdbs, dbAj))
+                //    {
+                //        responseData.Code = "1";
+                //        responseData.Message = "SUCCESS";
+                //    }
+                //    else
+                //    {
+                //        responseData.Code = "-11";
+                //        responseData.Message = "日志记录失败";
+                //    }
+                //}
+                //else
+                //{
+                //    responseData.Code = "-1";
+                //    responseData.Message = "resultXml";
+                //}
+                //保存数据库
+                dbAj.ExecuteNonQuery(sqlDelete, null);
+                dbAj.ExecuteNonQuery(sqlInsert, null);
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException e)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS----" + e.Message;
             }
             catch (NullReferenceException nre)
             {
@@ -782,7 +1294,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 dbUtility.ExecuteNonQuery(sqlStr, null);
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

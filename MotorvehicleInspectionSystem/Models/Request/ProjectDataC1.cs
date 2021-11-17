@@ -103,5 +103,15 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         [XmlElement ("bz")]
         public string Bz { get; set; }
+        /// <summary>
+        /// 检测开始时间  yyyyMMddHHmmss
+        /// </summary>
+        [XmlIgnore]
+        public string Jckssj { get; set; }
+        /// <summary>
+        /// 检测结束时间 yyyyMMddHHmmss
+        /// </summary>
+        [XmlIgnore]
+        public string Jcjssj { get; set; }
     }
 }

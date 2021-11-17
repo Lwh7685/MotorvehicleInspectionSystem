@@ -92,7 +92,22 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// <summary>
         /// 项目列表
         /// </summary>
-        [XmlIgnore ]
-        public ProjectDataItem [] Xmlb { get; set; }
+        [XmlIgnore]
+        public ProjectDataItem[] Xmlb { get; set; }
+        /// <summary>
+        /// 检测开始时间  yyyyMMddHHmmss
+        /// </summary>
+        [XmlIgnore]
+        public string Jckssj { get; set; }
+        /// <summary>
+        /// 检测结束时间 yyyyMMddHHmmss
+        /// </summary>
+        [XmlIgnore]
+        public string Jcjssj { get; set; }
+        /// <summary>
+        /// 联网查询检验员
+        /// </summary>
+        [XmlIgnore]
+        public string Lwcxjyy { get; set; }
     }
 }
