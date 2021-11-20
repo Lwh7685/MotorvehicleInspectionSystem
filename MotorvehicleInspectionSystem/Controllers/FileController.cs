@@ -13,62 +13,31 @@ namespace MotorvehicleInspectionSystem.Controllers
     [ApiController]
     public class FileController : ControllerBase
     {
-
-        [HttpPost]
-        public string UploadFile([FromForm] FileUploadAPI objFile)
-        {
-            try
-            {
-                if (objFile.files.Length > 0)
-                {
-                   
-                    string pathF  = "D:\\Upload\\";
-                    string path = pathF + "\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.Month.ToString() + "\\" + DateTime.Now.Day.ToString() + "\\" + objFile.files.FileName.Split("_")[0] + "\\";
-                    if (!Directory.Exists(path))
-                    {
-                        Directory.CreateDirectory(path);
-                    }
-                    using (FileStream filesStream = System.IO.File.Create(path + objFile.files.FileName))
-                    {
-                        objFile.files.CopyTo(filesStream);
-                        filesStream.Flush();
-                        return path + objFile.files.FileName;
-                    }
-                }
-                else
-                {
-                    return "false";
-                }
-            }
-            catch (Exception ex)
-            {
-
-                return ex.Message;
-            }
-
-        }
-
-
+        /// <summary>
+        /// 上传文件，返回地址
+        /// </summary>
+        /// <param name="objFile">文件</param>
+        /// <returns></returns>
         [HttpPost]
         [DisableRequestSizeLimit]
-        public string UploadFile2([FromForm] IFormFile objFile)
+        public string UploadFile([FromForm] IFormFile objFile)
         {
             try
             {
                 if (objFile.Length > 0)
                 {
-
-                    string pathF = "D:\\Upload\\";
+                    string pathF = "D:\\Upload";
                     string path = pathF + "\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.Month.ToString() + "\\" + DateTime.Now.Day.ToString() + "\\" + objFile.FileName.Split("_")[0] + "\\";
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);
                     }
-                    using (FileStream filesStream = System.IO.File.Create(path + objFile.FileName))
+                    string aa = objFile.FileName.Split(".")[0].Split("-")[0] +"."+ objFile.FileName.Split(".")[1];
+                    using (FileStream filesStream = System.IO.File.Create(path + aa))
                     {
                         objFile.CopyTo(filesStream);
                         filesStream.Flush();
-                        return path + objFile.FileName;
+                        return path + aa;
                     }
                 }
                 else
@@ -78,12 +47,9 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             catch (Exception ex)
             {
-
                 return ex.Message;
             }
-
         }
-
 
         [HttpPost]
         public string PostFile([FromForm] IFormCollection formCollection)

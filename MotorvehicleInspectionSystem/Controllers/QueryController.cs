@@ -26,9 +26,18 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<User> users = new List<User>();
             try
             {
-                DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = string.Format("select *,STUFF((SELECT ',' + roleDm FROM Tb_UserRole WHERE username =a.UserName  FOR xml path('')),1,1,'') as RoleDm from Tab_UserInfo A");
-                users = db.QueryForList<User>(sql, null);
+                if (VehicleInspectionController.SyAj == "1")
+                {
+                    DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = string.Format("select *,STUFF((SELECT ',' + roleDm FROM Tb_UserRole WHERE username =a.UserName  FOR xml path('')),1,1,'') as RoleDm from Tab_UserInfo A");
+                    users = db.QueryForList<User>(sql, null);
+                }
+                else if (VehicleInspectionController.SyHj == "1")
+                {
+                    DbUtility db = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = "select RySFZ as SfzInfoID ,GongHao,RyName as 'username',RyName as 'turename',RyPassWord as 'PassWord' ,getdate() as 'AddDate',RyRight as 'RoleDm' from [dbo].[TbSystemUserInfo]";
+                    users = db.QueryForList<User>(sql, null);
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -335,8 +344,13 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             id++;
                             string jcxmS = jcxmZtS.Split(":")[0];
+                            if (jcxmS != "NQ" && jcxmS != "UC" && jcxmS != "F1" && jcxmS != "C1" && jcxmS != "DC" && jcxmS.IndexOf("R") < 0)
+                            {
+                                continue;
+                            }
                             if (jcxmS != "")
                             {
+
                                 string ztS = jcxmZtS.Split(":")[1];
                                 if (ztS == "1")
                                 {

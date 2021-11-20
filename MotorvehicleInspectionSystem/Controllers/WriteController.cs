@@ -530,6 +530,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         public SaveResult[] LYYDJKW010(RequestData requestData, ResponseData responseData, string zdbs)
         {
             List<SaveResult> saveResults = new List<SaveResult>();
+            string code = "-1";
             try
             {
                 //安检数据库连接
@@ -537,35 +538,54 @@ namespace MotorvehicleInspectionSystem.Controllers
                 //环检数据库连接
                 DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
                 //项目开始类实例化
-                ProjectStartW010 projectStartW010 = JSONHelper.ConvertObject<ProjectStartW010>(responseData.Body[0]);
-                //序列化为XML
-                string xmlDocStr = XMLHelper.XmlSerializeStr<ProjectStartW010>(projectStartW010);
-                //调用接口
-                string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectStartW010.AjJkxlh, "18C55", xmlDocStr);
-                //分析返回结果
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resultXml);
-                String code = XMLHelper.GetNodeValue(doc, "code");
-                if (code == "1")
+                ProjectStartW010 projectStartW010 = JSONHelper.ConvertObject<ProjectStartW010>(requestData.Body[0]);
+                //判断是否安检操作,并且上传平台
+                if (projectStartW010.Ajywlb != "-")
                 {
-                    //成功时写日志
-                    //记录项目开始
-                    if (saveDetectionProcess("1", projectStartW010, zdbs, dbAj))
+                    if (projectStartW010.Ajywlb == "00" | projectStartW010.Ajywlb == "01" | projectStartW010.Ajywlb == "02" | projectStartW010.Ajywlb == "03" | projectStartW010.Ajywlb == "04")
                     {
-                        responseData.Code = "1";
-                        responseData.Message = "SUCCESS";
+                        //序列化为XML
+                        string xmlDocStr = XMLHelper.XmlSerializeStr<ProjectStartW010>(projectStartW010);
+                        XmlDocument xmlDocument = new XmlDocument();
+                        xmlDocument.LoadXml (xmlDocStr);
+                        xmlDocument.Save(@"D:\TestXml\" + projectStartW010.Jyxm + "_S.xml");
+                        ////调用接口
+                        //string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectStartW010.AjJkxlh, "18C55", xmlDocStr);
+                        ////分析返回结果
+                        //XmlDocument doc = new XmlDocument();
+                        //doc.LoadXml(resultXml);
+                        //code = XMLHelper.GetNodeValue(doc, "code");
+                        //if (code != "1")
+                        //{
+                        //    responseData.Code = "-1";
+                        //    responseData.Message = "resultXml";
+                        //}
                     }
                     else
                     {
-                        responseData.Code = "-11";
-                        responseData.Message = "日志记录失败";
+                        //不用上传平台，code作为标志
+                        code = "1";
+                    }
+                    if (code == "1")
+                    {
+                        //成功时写日志
+                        //记录项目开始
+                        if (SaveDetectionProcess("1", projectStartW010, zdbs, dbAj))
+                        {
+                            responseData.Code = "1";
+                            responseData.Message = "SUCCESS";
+                        }
+                        else
+                        {
+                            responseData.Code = "-11";
+                            responseData.Message = "日志记录失败";
+                        }
+                        //更改状态
+
                     }
                 }
-                else
-                {
-                    responseData.Code = "-1";
-                    responseData.Message = "resultXml";
-                }
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
             }
             catch (ArgumentNullException)
             {
@@ -1139,6 +1159,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                 //保存数据库
                 dbAj.ExecuteNonQuery(sqlDelete, null);
                 dbAj.ExecuteNonQuery(sqlInsert, null);
+
+                //保存环检数据库
+
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -1180,17 +1203,41 @@ namespace MotorvehicleInspectionSystem.Controllers
                 ProjectEndW012 projectEndW012 = JSONHelper.ConvertObject<ProjectEndW012>(requestData.Body[0]);
                 //序列化为XML
                 string xmlDocStr = XMLHelper.XmlSerializeStr<ProjectEndW012>(projectEndW012);
-                //调用接口
-                string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectEndW012.AjJkxlh, "18C58", xmlDocStr);
-                //分析返回结果
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resultXml);
-                String code = XMLHelper.GetNodeValue(doc, "code");
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xmlDocStr);
+                xmlDocument.Save(@"D:\TestXml\" + projectEndW012.Jyxm + "_E.xml");
+                ////调用接口
+                //string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectEndW012.AjJkxlh, "18C58", xmlDocStr);
+                ////分析返回结果
+                //XmlDocument doc = new XmlDocument();
+                //doc.LoadXml(resultXml);
+                //String code = XMLHelper.GetNodeValue(doc, "code");
+                //if (code == "1")
+                //{
+                //    //成功时写日志
+                //    //记录项目开始
+                //    if (SaveDetectionProcess("3", projectEndW012, zdbs, dbAj))
+                //    {
+                //        responseData.Code = "1";
+                //        responseData.Message = "SUCCESS";
+                //    }
+                //    else
+                //    {
+                //        responseData.Code = "-11";
+                //        responseData.Message = "日志记录失败";
+                //    }
+                //}
+                //else
+                //{
+                //    responseData.Code = "-1";
+                //    responseData.Message = "resultXml";
+                //}
+                string code = "1";
                 if (code == "1")
                 {
                     //成功时写日志
                     //记录项目开始
-                    if (saveDetectionProcess("3", projectEndW012, zdbs, dbAj))
+                    if (SaveDetectionProcess("3", projectEndW012, zdbs, dbAj))
                     {
                         responseData.Code = "1";
                         responseData.Message = "SUCCESS";
@@ -1200,11 +1247,6 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Code = "-11";
                         responseData.Message = "日志记录失败";
                     }
-                }
-                else
-                {
-                    responseData.Code = "-1";
-                    responseData.Message = "resultXml";
                 }
             }
             catch (ArgumentNullException)
@@ -1232,7 +1274,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="zdbs">终端标识 IP地址</param>
         /// <param name="dbUtility">数据库连接</param>
         /// <returns></returns>
-        public bool saveDetectionProcess(string czgc, object obj, string zdbs, DbUtility dbUtility)
+        public bool SaveDetectionProcess(string czgc, object obj, string zdbs, DbUtility dbUtility)
         {
             try
             {
@@ -1299,9 +1341,106 @@ namespace MotorvehicleInspectionSystem.Controllers
                 return false;
             }
         }
+        /// <summary>
+        /// 更新检验项目状态 安检数据库
+        /// </summary>
+        /// <param name="lsh">流水号</param>
+        /// <param name="jcxm">检验项目</param>
+        /// <param name="status">状态</param>
+        /// <param name="jcxh">检测线号</param>
+        /// <param name="jyy">检验员</param>
+        /// <param name="dbUtility">数据库连接</param>
+        /// <returns></returns>
+        public bool UpdateJcxmStatusAj(string lsh, string jcxm, string status, string jcxh, string jyy, DbUtility dbUtility)
+        {
+            try
+            {
+                string sql = "update  LY_Flow_Info set ";
+                switch (jcxm)
+                {
+                    case "NQ":
+                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'NQ:0','NQ:" + status + "'),lwcxstatus = '" + status + "'";
 
+                        break;
+                    case "UC":
+                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'UC:0','UC:" + status + "'),wyxjcstatus = '" + status + "'";
 
-
-
+                        break;
+                    case "F1":
+                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'F1:0','F1:" + status + "'),wgstatus = '" + status + "'";
+                        if (!string.IsNullOrEmpty(jcxh))
+                        {
+                            sql += ",Man_TD_WG='" + jcxh + "'";
+                        }
+                        if (!string.IsNullOrEmpty(jyy))
+                        {
+                            sql += ",Ry_02='" + jyy + "'";
+                        }
+                        break;
+                    case "C1":
+                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'C1:0','C1:" + status + "'),dpstatus = '" + status + "'";
+                        if (!string.IsNullOrEmpty(jcxh))
+                        {
+                            sql += ",Man_TD_DP='" + jcxh + "'";
+                        }
+                        if (!string.IsNullOrEmpty(jyy))
+                        {
+                            sql += ",Ry_03='" + jyy + "'";
+                        }
+                        break;
+                    case "DC":
+                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'DC:0','DC:" + status + "'),dpdtstatus = '" + status + "'";
+                        if (!string.IsNullOrEmpty(jcxh))
+                        {
+                            sql += ",Man_TD_DT='" + jcxh + "'";
+                        }
+                        if (!string.IsNullOrEmpty(jyy))
+                        {
+                            sql += ",Ry_04='" + jyy + "'";
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+                sql += " where lsh='" + lsh + "'";
+                dbUtility.ExecuteNonQuery(sql, null);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// 更新检验项目状态 环检数据库
+        /// </summary>
+        /// <param name="lsh">流水号</param>
+        /// <param name="jcxm">检测项目F1、C1</param>
+        /// <param name="status">状态</param>
+        /// <param name="jcxh">检测线号</param>
+        /// <param name="jyy">检验员</param>
+        /// <param name="dbUtility">数据库连接</param>
+        /// <returns></returns>
+        public bool updateJcxmStatusHj(string lsh, string jcxm, string status, string jcxh, string jyy, DbUtility dbUtility)
+        {
+            try
+            {
+                string sql = "";
+                if (jcxm == "F1")
+                {
+                    sql = "update LY_Flow_Info set GW_01 ='" + status + "',Wjy ='" + jyy + "',Man_TD_WG ='" + jcxh + "' where Lsh ='" + lsh + "'";
+                }
+                if (jcxm == "C1")
+                {
+                    sql = "update LY_Flow_Info set GW_03 ='" + status + "',Djy ='" + jyy + "',Man_TD_DP ='" + jcxh + "' where lsh='" + lsh + "'";
+                }
+                dbUtility.ExecuteNonQuery(sql, null);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

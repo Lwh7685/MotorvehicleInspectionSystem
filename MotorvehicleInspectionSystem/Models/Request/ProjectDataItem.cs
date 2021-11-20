@@ -19,7 +19,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         public string Xmms { get; set; }
         /// <summary>
-        /// 项目描述
+        /// 项目评价
         /// </summary>
         public string Xmpj { get; set; }
         /// <summary>
