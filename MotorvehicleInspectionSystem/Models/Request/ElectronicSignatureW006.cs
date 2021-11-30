@@ -15,17 +15,9 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         public int ID { get; set; }
         /// <summary>
-        /// 流水号
-        /// </summary>
-        public string Lsh { get; set; }
-        /// <summary>
         /// 号牌号码
         /// </summary>
         public string Hphm { get; set; }
-        /// <summary>
-        /// 检测次数
-        /// </summary>
-        public int Jccs { get; set; }
         /// <summary>
         /// 检测项目
         /// </summary>
@@ -43,12 +35,28 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         public string Qm { get; set; }
         /// <summary>
-        /// 保存安检
+        /// 安检业务类别
         /// </summary>
-        public string Bcaj { get; set; }
+        public string Ajywlb { get; set; }
         /// <summary>
-        /// 保存环检
+        /// 环检业务类别
         /// </summary>
-        public string BcHj { get; set; }
+        public string Hjywlb { get; set; }
+        /// <summary>
+        /// 安检流水号
+        /// </summary>
+        public string Ajlsh { get; set; }
+        /// <summary>
+        /// 环检流水号
+        /// </summary>
+        public string Hjlsh { get; set; }
+        /// <summary>
+        /// 安检检测次数
+        /// </summary>
+        public int Ajjccs { get; set; }
+        /// <summary>
+        /// 环检检测次数
+        /// </summary>
+        public int Hjjccs { get; set; }
     }
 }

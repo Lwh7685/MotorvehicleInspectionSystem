@@ -50,5 +50,13 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 安检车型
         /// </summary>
         public string Ajcx { get; set; }
+        /// <summary>
+        /// 安检流水号
+        /// </summary>
+        public string Ajlsh { get; set; }
+        /// <summary>
+        /// 环检流水号
+        /// </summary>
+        public string Hjlsh { get; set; }
     }
 }

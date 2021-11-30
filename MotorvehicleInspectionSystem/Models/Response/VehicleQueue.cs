@@ -13,7 +13,8 @@ namespace MotorvehicleInspectionSystem.Models
         /// <summary>
         /// 流水号
         /// </summary>
-        public string Lsh { get; set; }
+        public string Ajlsh { get; set; }
+        public string Hjlsh { get; set; }
         /// <summary>
         /// 号牌号码
         /// </summary>
@@ -62,6 +63,18 @@ namespace MotorvehicleInspectionSystem.Models
         /// 环检业务类别汉字标识
         /// </summary>
         public string HjywlbCc { get; set; }
+        /// <summary>
+        /// 检测次数
+        /// </summary>
+        public string Jccs { get; set; }
+        /// <summary>
+        /// 安检检测次数
+        /// </summary>
+        public string Ajjccs { get; set; }
+        /// <summary>
+        /// 环检检测次数
+        /// </summary>
+        public string Hjjccs { get; set; }
 
     }
 }

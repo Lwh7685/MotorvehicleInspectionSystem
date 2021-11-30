@@ -386,14 +386,6 @@ namespace MotorvehicleInspectionSystem.Models
         ///</summary>
         public string Rygg { get; set; }
         /// <summary>
-        ///维修单位
-        ///</summary>
-        public string Wxdw { get; set; }
-        /// <summary>
-        ///竣工日期
-        ///</summary>
-        public string Jgrq { get; set; }
-        /// <summary>
         ///联系电话
         ///</summary>
         [JsonProperty("Lxdh")]
@@ -431,39 +423,10 @@ namespace MotorvehicleInspectionSystem.Models
         [JsonProperty("Qzs")]
         public string  Qzhsh { get; set; }
         /// <summary>
-        ///额定扭矩
-        ///</summary>
-        public string Ednj { get; set; }
-        /// <summary>
-        ///额定扭矩转速
-        ///</summary>
-        [JsonProperty("Ednjzs")]
-        public string Ednjzhs { get; set; }
-        /// <summary>
-        ///功率表征方式
-        ///</summary>
-        [JsonProperty("Glbzfs")]
-        public string glbzhfsh { get; set; }
-        /// <summary>
-        ///客车等级
-        ///</summary>
-        [JsonProperty("Kcdj")]
-        public string Kchdj { get; set; }
-        /// <summary>
-        ///货车车身形式
-        ///</summary>
-        [JsonProperty("Hccsxs")]
-        public string Hchchshxsh { get; set; }
-        /// <summary>
         ///转向轴数
         ///</summary>
         [JsonProperty("Zxzs")]
         public string  Zhxzhsh { get; set; }
-        /// <summary>
-        ///驱动轴质量
-        ///</summary>
-        [JsonProperty("Qdzzl")]
-        public string  Qdzhzhl { get; set; }
         /// <summary>
         ///综检检验类别   等级/在用
         ///</summary>
@@ -522,5 +485,14 @@ namespace MotorvehicleInspectionSystem.Models
         /// 环检登录时间  yyyyMMddHHmmss
         /// </summary>
         public string Hjdlsj { get; set; }
+        /// <summary>
+        /// 安检流水号
+        /// </summary>
+        public string Ajlsh { get; set; }
+        /// <summary>
+        /// 环检流水号
+        /// </summary>
+        public string Hjlsh { get; set; }
+        
     }
 }

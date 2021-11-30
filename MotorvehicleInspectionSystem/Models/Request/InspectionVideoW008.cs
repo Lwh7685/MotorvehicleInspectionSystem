@@ -15,10 +15,6 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         public int ID { get; set; }
         /// <summary>
-        /// 流水号
-        /// </summary>
-        public string Lsh { get; set; }
-        /// <summary>
         /// 号牌种类
         /// </summary>
         public string Hpzl { get; set; }
@@ -26,10 +22,6 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 号牌号码
         /// </summary>
         public string Hphm { get; set; }
-        /// <summary>
-        /// 检测次数
-        /// </summary>
-        public int Jccs { get; set; }
         /// <summary>
         /// 检测线号
         /// </summary>
@@ -104,5 +96,21 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 录像保存标志  0=无视频，由后台截取  1=有视频，文件已上传
         /// </summary>
         public string Lxbz { get; set; }
+        /// <summary>
+        /// 安检流水号
+        /// </summary>
+        public string Ajlsh { get; set; }
+        /// <summary>
+        /// 环检流水号
+        /// </summary>
+        public string Hjlsh { get; set; }
+        /// <summary>
+        /// 安检检测次数
+        /// </summary>
+        public int Ajjccs { get; set; }
+        /// <summary>
+        /// 环检检测次数
+        /// </summary>
+        public int Hjjccs { get; set; }
     }
 }

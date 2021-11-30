@@ -15,7 +15,29 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// 流水号
         /// </summary>
         public string Lsh { get; set; }
+        /// <summary>
+        /// 安检流水号
+        /// </summary>
+        public string Ajlsh { get; set; }
+        /// <summary>
+        /// 安检检测次数
+        /// </summary>
+        public int Ajjccs { get; set; }
+        /// <summary>
+        /// 安检业务类别
+        /// </summary>
         public string Ajywlb { get; set; }
+        /// <summary>
+        /// 环检流水号
+        /// </summary>
+        public string Hjlsh { get; set; }
+        /// <summary>
+        /// 环检检测次数
+        /// </summary>
+        public int Hjjccs { get; set; }
+        /// <summary>
+        /// 环检业务类别
+        /// </summary>
         public string Hjywlb { get; set; }
         /// <summary>
         /// 项目编号

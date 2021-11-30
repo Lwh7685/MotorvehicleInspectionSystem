@@ -105,7 +105,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         User[] users = QC.LYYDJKR001(responseData);
                         responseData.Body = users;
                         break;
-                    //查询机动车队列
+                    //查询机动车队列  LYYDJKR002
                     case "LYYDJKR002":
                         VehicleQueue[] vehicleQueues = QC.LYYDJKR002(requestData, responseData);
                         responseData.Body = vehicleQueues;

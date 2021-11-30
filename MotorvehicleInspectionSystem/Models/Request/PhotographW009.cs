@@ -15,10 +15,6 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         public int ID { get; set; }
         /// <summary>
-        /// 流水号
-        /// </summary>
-        public string Lsh { get; set; }
-        /// <summary>
         /// 号牌种类
         /// </summary>
         public string Hpzl { get; set; }
@@ -30,10 +26,6 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 车辆识别代号
         /// </summary>
         public string Clsbdh { get; set; }
-        /// <summary>
-        /// 检测次数
-        /// </summary>
-        public int Jccs { get; set; }
         /// <summary>
         /// 检测线号
         /// </summary>
@@ -54,5 +46,9 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 安检业务类别
         /// </summary>
         public string Ajywlb { get; set; }
+        public string Ajlsh { get; set; }
+        public string Hjlsh { get; set; }
+        public int Ajjccs { get; set; }
+        public int Hjjccs { get; set; }
     }
 }

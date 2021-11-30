@@ -12,7 +12,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 流水号
         /// </summary>
         [XmlElement("jylsh")]
-        public string Lsh { get; set; }
+        public string Ajlsh { get; set; }
         /// <summary>
         /// 检验机构编号
         /// </summary>
@@ -27,7 +27,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 检测次数
         /// </summary>
         [XmlElement("jycs")]
-        public int Jccs { get; set; }
+        public int Ajjccs { get; set; }
         /// <summary>
         /// 号牌种类
         /// </summary>
@@ -109,5 +109,9 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         [XmlIgnore]
         public string Lwcxjyy { get; set; }
+        [XmlIgnore ]
+        public string Hjlsh { get; set; }
+        [XmlIgnore ]
+        public int Hjjccs { get; set; }
     }
 }

@@ -28,7 +28,6 @@ namespace MotorvehicleInspectionSystem.Tools
             string result = writeObjectOutNew.Result.Body.writeObjectOutNewResult;
             //解码UTF8
             result = HttpUtility.UrlDecode(result);
-
             return result;
         }
     }
