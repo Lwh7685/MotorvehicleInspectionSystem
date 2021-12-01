@@ -8,6 +8,7 @@ using MotorvehicleInspectionSystem.Tools;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
@@ -318,10 +319,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                 DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
                 DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                 QueryVehicleCriteria queryVehicleDetailsR005 = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                if (string.IsNullOrEmpty ( queryVehicleDetailsR005.Ajlsh ) && string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh)
-                    && (string.IsNullOrEmpty (queryVehicleDetailsR005.Hpzl )|| string.IsNullOrEmpty ( queryVehicleDetailsR005.Hphm))
-                    && string.IsNullOrEmpty (queryVehicleDetailsR005.Clsbdh )
-                    && string.IsNullOrEmpty (queryVehicleDetailsR005.Xszbh))
+                if (string.IsNullOrEmpty(queryVehicleDetailsR005.Ajlsh) && string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh)
+                    && (string.IsNullOrEmpty(queryVehicleDetailsR005.Hpzl) || string.IsNullOrEmpty(queryVehicleDetailsR005.Hphm))
+                    && string.IsNullOrEmpty(queryVehicleDetailsR005.Clsbdh)
+                    && string.IsNullOrEmpty(queryVehicleDetailsR005.Xszbh))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空";
@@ -332,7 +333,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         //按流水号查询
                         sql = "select *,'-' as Hjdlsj,tn.lsh as ajlsh,'-' as hjlsh from BaseInfo_Net tn,BaseInfo_Hand th where tn.lsh=th.Lsh ";
-                        if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Ajlsh ))
+                        if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Ajlsh))
                         {
                             sql += " and tn.Lsh ='" + queryVehicleDetailsR005.Ajlsh.Trim().Replace("'", "").Replace("-", "") + "'";
                         }
@@ -371,7 +372,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         sql += " ,'' as Zjlsh,'' as Dzss,'' as Kqxjzw,t1.hbdbqk as Pfjd,t1.zsxzqh as pqgsh,WRZY as Jqfs,ZJDW as Dws,xzqh as Gyfs,'-' as sjr,t1.Bz03 as Sjrdh,'' as Sjrsfzh";
                         sql += " ,t2.InBz_01 as Hjdlsj ,t2.lsh as hjlsh,'-' as ajlsh,'0' as Chych,'0' as qdzhsh";
                         sql += " from BaseInfo_Net t1,LY_Flow_Info t2 where t1.Lsh = t2.Lsh ";
-                        if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh ))
+                        if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh))
                         {
                             sql += " and t2.Lsh ='" + queryVehicleDetailsR005.Hjlsh.Trim().Replace("'", "").Replace("-", "") + "'";
                         }
@@ -447,13 +448,13 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 QueryVehicleCriteria queryByLSH = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                if (string.IsNullOrEmpty ( queryByLSH.Ajlsh  ) || string.IsNullOrEmpty(queryByLSH.Hjlsh))
+                if (string.IsNullOrEmpty(queryByLSH.Ajlsh) || string.IsNullOrEmpty(queryByLSH.Hjlsh))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空(Ajlsh/Hjlsh)";
                     return inspectionItemsR006s.ToArray();
                 }
-                if(string.IsNullOrEmpty (queryByLSH.Ajywlb ) || string .IsNullOrEmpty (queryByLSH.Hjywlb))
+                if (string.IsNullOrEmpty(queryByLSH.Ajywlb) || string.IsNullOrEmpty(queryByLSH.Hjywlb))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空(Ajywlb/Hjywlb)";
@@ -463,7 +464,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                     //按流水号查询
-                    sql = " select * from LY_Flow_Info where Lsh ='" + queryByLSH.Ajlsh  + "'";
+                    sql = " select * from LY_Flow_Info where Lsh ='" + queryByLSH.Ajlsh + "'";
                     DataTable dataTable = dbAj.ExecuteDataTable(sql, null);
                     if (dataTable.Rows.Count == 0)
                     {
@@ -524,16 +525,16 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 {
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Ajlsh ,
-                                        Ajlsh = queryByLSH.Ajlsh ,
-                                        Ajjccs = Convert.ToInt32 (dataTable.Rows[0]["jccs"].ToString()),
+                                        Lsh = queryByLSH.Ajlsh,
+                                        Ajlsh = queryByLSH.Ajlsh,
+                                        Ajjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Ajywlb = ajywlb,
                                         Jczt = "未检",
                                         Jcxm = jcxmS,
                                         ID = id,
                                         Hjlsh = "-",
-                                        Hjjccs =0,
+                                        Hjjccs = 0,
                                         Hjywlb = "-",
                                         Xmmc = dbAj.QueryForObject<DataDictionary>("select * from jscscode where fl='83' and dm='" + jcxmS + "'", null).Mc
                                     };
@@ -543,9 +544,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 {
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Ajlsh ,
-                                        Ajlsh = queryByLSH.Ajlsh ,
-                                        Ajjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString()),
+                                        Lsh = queryByLSH.Ajlsh,
+                                        Ajlsh = queryByLSH.Ajlsh,
+                                        Ajjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Jczt = "正在检测",
                                         Jcxm = jcxmS,
@@ -572,7 +573,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
                     if (queryByLSH.Hjywlb != "-")
                     {
-                        sql = " select * from LY_Flow_Info where Lsh ='" + queryByLSH.Hjlsh  + "'";
+                        sql = " select * from LY_Flow_Info where Lsh ='" + queryByLSH.Hjlsh + "'";
                         DataTable dataTable = dbHj.ExecuteDataTable(sql, null);
                         if (dataTable.Rows.Count > 0)
                         {
@@ -585,14 +586,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                                     var itemF1 = itemF1Arr.First();
                                     itemF1.Hjlsh = dataTable.Rows[0]["lsh"].ToString();
                                     itemF1.Hjywlb = dataTable.Rows[0]["jclb"].ToString();
-                                    itemF1.Hjjccs =Convert.ToInt32 ( dataTable.Rows[0]["jccs"].ToString());
+                                    itemF1.Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
                                 }
                                 else
                                 {
                                     id++;
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Hjlsh ,
+                                        Lsh = queryByLSH.Hjlsh,
                                         Ajlsh = "-",
                                         Ajjccs = 0,
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
@@ -601,7 +602,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                         Jcxm = "F1",
                                         ID = id,
                                         Hjlsh = dataTable.Rows[0]["lsh"].ToString(),
-                                        Hjjccs =Convert.ToInt32 ( dataTable.Rows[0]["jccs"].ToString()),
+                                        Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Hjywlb = dataTable.Rows[0]["jclb"].ToString(),
                                         Xmmc = "外观"
                                     };
@@ -616,23 +617,23 @@ namespace MotorvehicleInspectionSystem.Controllers
                                     var itemF1 = itemF1Arr.First();
                                     itemF1.Hjlsh = dataTable.Rows[0]["lsh"].ToString();
                                     itemF1.Hjywlb = dataTable.Rows[0]["jclb"].ToString();
-                                    itemF1.Hjjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString());
+                                    itemF1.Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
                                 }
                                 else
                                 {
                                     id++;
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Hjlsh ,
+                                        Lsh = queryByLSH.Hjlsh,
                                         Ajlsh = "-",
-                                        Ajjccs =0,
+                                        Ajjccs = 0,
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Ajywlb = "-",
                                         Jczt = "完成",
                                         Jcxm = "F1",
                                         ID = id,
                                         Hjlsh = dataTable.Rows[0]["lsh"].ToString(),
-                                        Hjjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString()),
+                                        Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Hjywlb = dataTable.Rows[0]["jclb"].ToString(),
                                         Xmmc = "外观"
                                     };
@@ -648,23 +649,23 @@ namespace MotorvehicleInspectionSystem.Controllers
                                     var itemF1 = itemF1Arr.First();
                                     itemF1.Hjlsh = dataTable.Rows[0]["lsh"].ToString();
                                     itemF1.Hjywlb = dataTable.Rows[0]["jclb"].ToString();
-                                    itemF1.Hjjccs =Convert.ToInt32 ( dataTable.Rows[0]["jccs"].ToString());
+                                    itemF1.Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
                                 }
                                 else
                                 {
                                     id++;
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Hjlsh ,
+                                        Lsh = queryByLSH.Hjlsh,
                                         Ajlsh = "-",
-                                        Ajjccs =0,
+                                        Ajjccs = 0,
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Ajywlb = "-",
                                         Jczt = (dataTable.Rows[0]["GW_03"].ToString() == "0" ? "未检" : "正在检测"),
                                         Jcxm = "C1",
                                         ID = id,
                                         Hjlsh = dataTable.Rows[0]["lsh"].ToString(),
-                                        Hjjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString()),
+                                        Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Hjywlb = dataTable.Rows[0]["jclb"].ToString(),
                                         Xmmc = "底盘"
                                     };
@@ -679,14 +680,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                                     var itemF1 = itemF1Arr.First();
                                     itemF1.Hjlsh = dataTable.Rows[0]["lsh"].ToString();
                                     itemF1.Hjywlb = dataTable.Rows[0]["jclb"].ToString();
-                                    itemF1.Hjjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString());
+                                    itemF1.Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString());
                                 }
                                 else
                                 {
                                     id++;
                                     InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                                     {
-                                        Lsh = queryByLSH.Hjlsh ,
+                                        Lsh = queryByLSH.Hjlsh,
                                         Ajlsh = "-",
                                         Ajjccs = 0,
                                         Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
@@ -695,7 +696,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                         Jcxm = "C1",
                                         ID = id,
                                         Hjlsh = dataTable.Rows[0]["lsh"].ToString(),
-                                        Hjjccs =Convert.ToInt32( dataTable.Rows[0]["jccs"].ToString()),
+                                        Hjjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                                         Hjywlb = dataTable.Rows[0]["jclb"].ToString(),
                                         Xmmc = "底盘"
                                     };
@@ -1157,25 +1158,25 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                if (string.IsNullOrEmpty (queryCriteria.Ajlsh) || string.IsNullOrEmpty(queryCriteria.Hjlsh))
+                if (string.IsNullOrEmpty(queryCriteria.Ajlsh) || string.IsNullOrEmpty(queryCriteria.Hjlsh))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Ajlsh/Hjlsh）";
                     return inspectionPhotoR017s.ToArray();
                 }
-                if (string.IsNullOrEmpty ( queryCriteria.Jyxm))
+                if (string.IsNullOrEmpty(queryCriteria.Jyxm))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Jyxm）";
                     return inspectionPhotoR017s.ToArray();
                 }
-                if (string.IsNullOrEmpty ( queryCriteria.Ajywlb))
+                if (string.IsNullOrEmpty(queryCriteria.Ajywlb))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Ajywlb）";
                     return inspectionPhotoR017s.ToArray();
                 }
-                if (string.IsNullOrEmpty ( queryCriteria.Hjywlb))
+                if (string.IsNullOrEmpty(queryCriteria.Hjywlb))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Hjywlb）";
@@ -1188,7 +1189,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                         //先查询外检车型
-                        sql = " select wgchx,ajywlb  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh  + "'";
+                        sql = " select wgchx,ajywlb  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh + "'";
                         DataTable dataTable = dbAj.ExecuteDataTable(sql, null);
                         if (dataTable.Rows.Count == 0)
                         {
@@ -1229,7 +1230,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     if (VehicleInspectionController.SyHj == "1")
                     {
                         DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
-                        sql = "select zs from LY_Flow_Info where Lsh='" + queryCriteria.Hjlsh  + "'";
+                        sql = "select zs from LY_Flow_Info where Lsh='" + queryCriteria.Hjlsh + "'";
                         DataTable dataTable = dbHj.ExecuteDataTable(sql, null);
                         if (dataTable.Rows.Count == 0)
                         {
@@ -1269,7 +1270,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                     DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
                     //安检外检车型，照片代码
-                    sql = " select wgchx  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh  + "'";
+                    sql = " select wgchx  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh + "'";
                     string ajwjcx = dbAj.ExecuteScalar(sql, null).ToString();
                     if (ajwjcx == "")
                     {
@@ -1281,7 +1282,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     string ajzpdm = dbAj.ExecuteScalar(sql, null).ToString();
 
                     //环检外检车型，照片代码
-                    sql = "select zs from LY_Flow_Info where Lsh='" + queryCriteria.Hjlsh  + "'";
+                    sql = "select zs from LY_Flow_Info where Lsh='" + queryCriteria.Hjlsh + "'";
                     string hjwjcx = dbHj.ExecuteScalar(sql, null).ToString();
                     if (hjwjcx == "")
                     {
@@ -1548,13 +1549,13 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
 
-                if (string.IsNullOrEmpty ( queryCriteria.Ajywlb ))
+                if (string.IsNullOrEmpty(queryCriteria.Ajywlb))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Ajywlb）";
                     return artificialProjectR016s.ToArray();
                 }
-                if (string.IsNullOrEmpty ( queryCriteria.Hjywlb ))
+                if (string.IsNullOrEmpty(queryCriteria.Hjywlb))
                 {
                     responseData.Code = "-1";
                     responseData.Message = "查询条件不能全部为空（Hjywlb）";
@@ -1568,7 +1569,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         List<ArtificialProject> artificialProjects = new List<ArtificialProject>();
 
                         //先查询外检车型
-                        sql = " select wgchx,ajywlb  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh  + "'";
+                        sql = " select wgchx,ajywlb  from BaseInfo_Hand where lsh='" + queryCriteria.Ajlsh + "'";
                         DataTable dataTable = dbAj.ExecuteDataTable(sql, null);
                         if (dataTable.Rows.Count == 0)
                         {
@@ -1739,6 +1740,49 @@ namespace MotorvehicleInspectionSystem.Controllers
         //    return a;
 
         //    a.Substring(0, 120);
+        //}
+        /// <summary>
+        /// 查询APK版本号
+        /// </summary>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public AppVersion[] LYYDJKR021(ResponseData responseData)
+        {
+            List<AppVersion> appVersions = new List<AppVersion>();
+            try
+            {
+                AppVersion appVersion = new AppVersion();
+                ApkDecoder apkDecoder = new ApkDecoder();
+                appVersion.Version = apkDecoder.AppVersion;
+                appVersion.VersionCode = apkDecoder.AppVersionCode;
+                appVersions.Add(appVersion );
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return appVersions.ToArray();
+        }
+        //private void apkDecoder_InfoParsed(ApkDecoder apkDecoder)
+        //{
+        //    this.Invoke(new Action<ApkDecoder>(SafeInfoParsed), apkDecoder);
+        //}
+        //private void SafeInfoParsed(ApkDecoder apkDecoder)
+        //{
+           
         //}
     }
 }

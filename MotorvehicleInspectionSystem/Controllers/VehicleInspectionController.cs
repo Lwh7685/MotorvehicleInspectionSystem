@@ -168,6 +168,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         ArtificialProjectR016[] artificialProjectR016s2 = QC.LYYDJKR020(requestData, responseData);
                         responseData.Body = artificialProjectR016s2;
                         break;
+                    case "LYYDJKR021":
+                        AppVersion[] appVersions = QC.LYYDJKR021(responseData );
+                        responseData.Body = appVersions;
+                        break;
                     default:
                         responseData.Code = "-7";
                         responseData.Message = "上传正确的接口编号（jkId）";

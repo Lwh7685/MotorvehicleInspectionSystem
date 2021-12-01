@@ -21,6 +21,7 @@ namespace MotorvehicleInspectionSystem.Models
                 Jcfs = dataTable.Rows[0]["jcfs"].ToString();
                 Jyjgbh = dataTable.Rows[0]["jyjgbh"].ToString();
                 Fwqdz = dataTable.Rows[0]["controlIP"].ToString();
+                Spbcdz = dataTable.Rows[0]["Web_VideoRecordPath"].ToString();//Web_VideoRecordPath
             }
         }
 
@@ -36,5 +37,9 @@ namespace MotorvehicleInspectionSystem.Models
         /// 服务器地址
         /// </summary>
         public string Fwqdz { get; set; }
+        /// <summary>
+        /// 视频保存地址
+        /// </summary>
+        public string Spbcdz { get; set; }
     }
 }

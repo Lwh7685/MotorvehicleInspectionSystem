@@ -340,6 +340,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             try
                             {
+                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh ,inspectionVideoW008.Spbhaj ,dbAj,"Aj");
                                 //先删除
                                 sql = "delete from UpLoad_AVI_XML where jcbh ='" + inspectionVideoW008.Ajlsh + "' and jklx ='" + inspectionVideoW008.Ajjccs + "' and xmbh ='" + inspectionVideoW008.Spbhaj + "'";
                                 dbAj.ExecuteNonQuery(sql, null);
@@ -361,7 +362,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " '" + inspectionVideoW008.Clpp + "',";// ,< clpp, varchar(48),>
                                 sql += " '" + inspectionVideoW008.Czdw + "',";// ,< czdw, varchar(125),>
                                 sql += " '" + inspectionVideoW008.Lxbz + "',";// ,< upload_OK, varchar(4),>
-                                sql += " '" + inspectionVideoW008.Lxxx + "',";// ,< InBz_01, varchar(72),>
+                                sql += " '" + lxxx + "',";// ,< InBz_01, varchar(72),>
                                 sql += " '" + inspectionVideoW008.Lxdz + "')";// ,< InBz_02, varchar(16),>)";
                                 dbAj.ExecuteNonQuery(sql, null);
                                 saveResult.BcjgAj = "success";
@@ -384,6 +385,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             try
                             {
+                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh, inspectionVideoW008.Spbhhj , dbHj, "Hj");
                                 //先删除
                                 sql = "delete from UpLoad_AVI_XML where jcbh ='" + inspectionVideoW008.Hjlsh + "' and jklx ='" + inspectionVideoW008.Hjjccs + "' and xmbh ='" + inspectionVideoW008.Spbhhj + "'";
                                 dbHj.ExecuteNonQuery(sql, null);
@@ -405,7 +407,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " '" + inspectionVideoW008.Clpp + "',";// ,< clpp, varchar(48),>
                                 sql += " '" + inspectionVideoW008.Czdw + "',";// ,< czdw, varchar(125),>
                                 sql += " '0',";// ,< upload_OK, varchar(4),>
-                                sql += " '" + inspectionVideoW008.Lxxx + "',";// ,< InBz_01, varchar(72),>
+                                sql += " '" + lxxx  + "',";// ,< InBz_01, varchar(72),>
                                 sql += " '" + inspectionVideoW008.Hjdlsj + "')";// ,< InBz_05, varchar(16),>)";
                                 dbHj.ExecuteNonQuery(sql, null);
                                 saveResult.BcjgHj = "success";
@@ -444,6 +446,45 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return saveResults.ToArray();
         }
+        /// <summary>
+        /// 查询摄像头信息
+        /// </summary>
+        /// <param name="jcxh">线号</param>
+        /// <param name="jcxm">项目</param>
+        /// <param name="dbUtility">数据库连接</param>
+        /// <param name="ajrohj">安检或者环保</param>
+        /// <returns></returns>
+        public string QueryIPCInfo(string jcxh, string jcxm, DbUtility dbUtility, string ajrohj)
+        {
+            try
+            {
+                string lxxx = "";
+                if (ajrohj == "Aj")
+                {
+                    string sql = "select * from T_IPCInfo where Jcxh='"+jcxh +"' and Gw_DM ='"+jcxm +"'";
+                    DataTable dataTable = dbUtility.ExecuteDataTable(sql, null);
+                    if (dataTable.Rows.Count > 0)
+                    {
+                        lxxx = dataTable.Rows[0]["NVRIP"].ToString() + "/" + dataTable.Rows[0]["NVRAccount"].ToString() + "/" + dataTable.Rows[0]["NVRPassword"].ToString() + "/" + dataTable.Rows[0]["NVRChannel"].ToString();
+                    }
+                }
+                else
+                {
+                    string sql = "select * from T_IPCInfo where LineNumber ='"+jcxh +"' and WorkplaceCode ='"+jcxm +"'";
+                    DataTable dataTable = dbUtility.ExecuteDataTable(sql, null);
+                    if (dataTable.Rows.Count > 0)
+                    {
+                        lxxx = dataTable.Rows[0]["NVRIP"].ToString() + "/" + dataTable.Rows[0]["NVRAccount"].ToString() + "/" + dataTable.Rows[0]["NVRPassword"].ToString() + "/" + dataTable.Rows[0]["NVRChannel"].ToString();
+                    }
+                }
+                return lxxx;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
         /// <summary>
         /// 触发摄像头拍照
         /// </summary>
@@ -1315,14 +1356,25 @@ namespace MotorvehicleInspectionSystem.Controllers
                         StringBuilder xmXh = new StringBuilder();
                         foreach (ProjectDataItem projectDataItem in projectDataItems)
                         {
-                            xmXh.Append(projectDataItem.Xmdm ).Append (":").Append (projectDataItem.Xmpj ).Append (";");
-                            if(projectDataItem.Xmpj == "2")
+                            xmXh.Append(projectDataItem.Xmdm).Append(":").Append(projectDataItem.Xmpj).Append(";");
+                            if (projectDataItem.Xmpj == "2")
                             {
                                 jcpj = "-1";
                             }
                         }
-                        sqlHj = string.Format("INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC])VALUES ({ 0},{ 1},{ 2},{ 3},{ 4},{ 5},{ 6},{ 7},{ 8},{ 9},{ 10},{ 11})",
-                            projectDataF1.Hjlsh,projectDataF1.Hpzl,projectDataF1.Hphm,projectDataF1.Hjjccs,DateTime.Now.ToString("yyyyMMdd"),projectDataF1.Jckssj,projectDataF1.Jcjssj,jcpj ,"F1", xmXh.ToString (), projectDataF1.Wgjcjyy ,projectDataF1.Jcxh );
+                        sqlHj = "INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC])VALUES (";
+                        sqlHj += " '" + projectDataF1.Hjlsh + "',";
+                        sqlHj += " '" + projectDataF1.Hpzl + "',";
+                        sqlHj += " '" + projectDataF1.Hphm + "',";
+                        sqlHj += " '" + projectDataF1.Hjjccs + "',";
+                        sqlHj += " '" + DateTime.Now.ToString("yyyyMMdd") + "',";
+                        sqlHj += " '" + projectDataF1.Jckssj + "',";
+                        sqlHj += " '" + projectDataF1.Jcjssj + "',";
+                        sqlHj += " '" + jcpj + "',";
+                        sqlHj += " '" + "F1" + "',";
+                        sqlHj += " '" + xmXh.ToString() + "',";
+                        sqlHj += " '" + projectDataF1.Wgjcjyy + "',";
+                        sqlHj += " '" + projectDataF1.Jcxh + "')";
                         dbHj.ExecuteNonQuery(sqlHj, null);
                         //直接更新状态吧，0=未检 1=正在检测，2=检测完成 3=上传数据                        
                         sqlHj = "update LY_Flow_Info set GW_01 ='3' where Lsh ='" + projectDataF1.Hjlsh + "'";
@@ -1562,48 +1614,48 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 ProjectDataNQ projectDataNQ = JSONHelper.ConvertObject<ProjectDataNQ>(projectData.Jcsj);
                                 if (ajorhj == "Aj")
                                 {
-                                    sqlStr += " where lsh='" + projectDataNQ.Ajlsh + "' and jccs='" + projectDataNQ.Ajjccs + "' and jcxm='" + "NQ" + "'";
+                                    sqlStr += " where lsh='" + projectDataNQ.Ajlsh + "' and jccs='" + projectDataNQ.Ajjccs + "' and jcxm='" + "NQ" + "' and zt<>'4'";
                                 }
                                 else
                                 {
-                                    sqlStr += " where lsh='" + projectDataNQ.Hjlsh + "' and jccs='" + projectDataNQ.Hjjccs + "' and jcxm='" + "NQ" + "'";
+                                    sqlStr += " where lsh='" + projectDataNQ.Hjlsh + "' and jccs='" + projectDataNQ.Hjjccs + "' and jcxm='" + "NQ" + "' and zt<>'4'";
                                 }
                                 break;
                             case "UC":
                                 ProjectDataUC projectDataUC = JSONHelper.ConvertObject<ProjectDataUC>(projectData.Jcsj);
                                 if (ajorhj == "Aj")
                                 {
-                                    sqlStr += " where lsh='" + projectDataUC.Ajlsh + "' and jccs='" + projectDataUC.Ajjccs + "' and jcxm='" + "UC" + "'";
+                                    sqlStr += " where lsh='" + projectDataUC.Ajlsh + "' and jccs='" + projectDataUC.Ajjccs + "' and jcxm='" + "UC" + "' and zt<>'4'";
                                 }
                                 else
                                 {
-                                    sqlStr += " where lsh='" + projectDataUC.Hjlsh + "' and jccs='" + projectDataUC.Hjjccs + "' and jcxm='" + "UC" + "'";
+                                    sqlStr += " where lsh='" + projectDataUC.Hjlsh + "' and jccs='" + projectDataUC.Hjjccs + "' and jcxm='" + "UC" + "' and zt<>'4'";
                                 }
                                 break;
                             case "F1":
                                 ProjectDataF1 projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
                                 if (ajorhj == "Aj")
                                 {
-                                    sqlStr += " where lsh='" + projectDataF1.Ajlsh + "' and jccs='" + projectDataF1.Ajjccs + "' and jcxm='" + "F1" + "'";
+                                    sqlStr += " where lsh='" + projectDataF1.Ajlsh + "' and jccs='" + projectDataF1.Ajjccs + "' and jcxm='" + "F1" + "' and zt<>'4'";
                                 }
                                 else
                                 {
-                                    sqlStr += " where lsh='" + projectDataF1.Hjlsh + "' and jccs='" + projectDataF1.Hjjccs + "' and jcxm='" + "F1" + "'";
+                                    sqlStr += " where lsh='" + projectDataF1.Hjlsh + "' and jccs='" + projectDataF1.Hjjccs + "' and jcxm='" + "F1" + "' and zt<>'4'";
                                 }
                                 break;
                             case "C1":
                                 ProjectDataC1 projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
-                                sqlStr += " where lsh='" + projectDataC1.Ajlsh + "' and jccs='" + projectDataC1.Ajjccs + "' and jcxm='" + "C1" + "'";
+                                sqlStr += " where lsh='" + projectDataC1.Ajlsh + "' and jccs='" + projectDataC1.Ajjccs + "' and jcxm='" + "C1" + "' and zt<>'4'";
                                 break;
                             case "DC":
                                 ProjectDataDC projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
                                 if (ajorhj == "Aj")
                                 {
-                                    sqlStr += " where lsh='" + projectDataDC.Ajlsh + "' and jccs='" + projectDataDC.Ajjccs + "' and jcxm='" + "DC" + "'";
+                                    sqlStr += " where lsh='" + projectDataDC.Ajlsh + "' and jccs='" + projectDataDC.Ajjccs + "' and jcxm='" + "DC" + "' and zt<>'4'";
                                 }
                                 else
                                 {
-                                    sqlStr += " where lsh='" + projectDataDC.Hjlsh + "' and jccs='" + projectDataDC.Hjjccs + "' and jcxm='" + "DC" + "'";
+                                    sqlStr += " where lsh='" + projectDataDC.Hjlsh + "' and jccs='" + projectDataDC.Hjjccs + "' and jcxm='" + "DC" + "' and zt<>'4'";
                                 }
                                 break;
                         }
@@ -1625,7 +1677,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             {
                                 sqlStr += " where lsh='" + projectEndW012.Hjlsh + "'  and jccs='" + projectEndW012.Hjjccs + "'";
                             }
-                            sqlStr += " and jcxm='" + projectEndW012.Jyxm + "'";
+                            sqlStr += " and jcxm='" + projectEndW012.Jyxm + "' and zt<>'4'";
                         }
                         else
                         {
@@ -1671,21 +1723,48 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <returns></returns>
         public bool UpdateJcxmStatusAj(string lsh, string jcxm, string status, string jcxh, string jyy, DbUtility dbUtility)
         {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
             try
             {
-                string sql = "update  LY_Flow_Info set ";
+                string sql = "select * from LY_Flow_Info where Lsh ='" + lsh + "'";
+                DataTable dataTable = dbUtility.ExecuteDataTable(sql, null);
+                if (dataTable.Rows.Count > 0)
+                {
+                    string[] jcxmZtArr = dataTable.Rows[0]["jyxmstatus"].ToString().Split(";");
+                    foreach (string jcxmZt in jcxmZtArr)
+                    {
+                        if (jcxmZt.IndexOf(":") > 0)
+                        {
+                            dictionary.Add(jcxmZt.Split(":")[0], jcxmZt.Split(":")[1]);
+                        }
+                    }
+                }
+                if (!dictionary.ContainsKey(jcxm))
+                {
+                    dictionary.Add(jcxm, status);//不含则加
+                }
+                else
+                {
+                    dictionary[jcxm] = status;//含则改
+                }
+                StringBuilder jcxmZtSB = new StringBuilder();
+                foreach (var item in dictionary)
+                {
+                    jcxmZtSB.Append(item.Key).Append(":").Append(item.Value).Append(";");
+                }
+                sql = "update  LY_Flow_Info set ";
                 switch (jcxm)
                 {
                     case "NQ":
-                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'NQ:0','NQ:" + status + "'),lwcxstatus = '" + status + "'";
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',lwcxstatus = '" + status + "'";
 
                         break;
                     case "UC":
-                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'UC:0','UC:" + status + "'),wyxjcstatus = '" + status + "'";
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',wyxjcstatus = '" + status + "'";
 
                         break;
                     case "F1":
-                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'F1:0','F1:" + status + "'),wgstatus = '" + status + "'";
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',wgstatus = '" + status + "'";
                         if (!string.IsNullOrEmpty(jcxh))
                         {
                             sql += ",Man_TD_WG='" + jcxh + "'";
@@ -1696,7 +1775,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         }
                         break;
                     case "C1":
-                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'C1:0','C1:" + status + "'),dpstatus = '" + status + "'";
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',dpstatus = '" + status + "'";
                         if (!string.IsNullOrEmpty(jcxh))
                         {
                             sql += ",Man_TD_DP='" + jcxh + "'";
@@ -1707,7 +1786,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         }
                         break;
                     case "DC":
-                        sql = sql + " jyxmstatus=REPLACE(convert(varchar(200),jyxmstatus),'DC:0','DC:" + status + "'),dpdtstatus = '" + status + "'";
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',dpdtstatus = '" + status + "'";
                         if (!string.IsNullOrEmpty(jcxh))
                         {
                             sql += ",Man_TD_DT='" + jcxh + "'";

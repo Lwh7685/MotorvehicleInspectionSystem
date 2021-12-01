@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
+using MotorvehicleInspectionSystem.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +27,12 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 if (objFile.Length > 0)
                 {
+                    SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
                     string pathF = "D:\\Upload";
+                    if(!string.IsNullOrEmpty (systemParameterAj.Spbcdz))
+                    {
+                        pathF = systemParameterAj.Spbcdz ;
+                    }
                     string path = pathF + "\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.Month.ToString() + "\\" + DateTime.Now.Day.ToString() + "\\" + objFile.FileName.Split("_")[0] + "\\";
                     if (!Directory.Exists(path))
                     {
@@ -51,35 +57,18 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
         }
 
-        [HttpPost]
-        public string PostFile([FromForm] IFormCollection formCollection)
+        /// <summary>
+        /// 文件流的方式输出
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost ]
+        public IActionResult DownloadFile()
         {
-            string result = "";
-            string webRootPath = "D:\\Upload\\";
-
-            FormFileCollection filelist = (FormFileCollection)formCollection.Files;
-
-            foreach (IFormFile file in filelist)
-            {
-                String Tpath = "/" + DateTime.Now.ToString("yyyy-MM-dd") + "/";
-                string name = file.FileName;
-                string FileName = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string FilePath = webRootPath + Tpath;
-
-                string type = System.IO.Path.GetExtension(name);
-                DirectoryInfo di = new DirectoryInfo(FilePath);
-                if (!di.Exists) { di.Create(); }
-                using (FileStream fs = System.IO.File.Create(FilePath + FileName + type))
-                {
-                    // 复制文件
-                    file.CopyTo(fs);
-                    // 清空缓冲区数据
-                    fs.Flush();
-                }
-                result = "1";
-            }
-            return result;
+            var addrUrl = Path.Combine($"{Environment.CurrentDirectory}", @"apks\app-release.apk");
+            var stream = System.IO.File.OpenRead(addrUrl);
+            return File(stream, "application/vnd.android.package-archive", Path.GetFileName(addrUrl));
         }
+
     }
     public class FileUploadAPI
     {
