@@ -407,6 +407,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             catch (ArgumentNullException)
                             {
                                 //环检也没有数据,直接返回吧
+                                vehicleDetails.Add(vehicleDetails1);
                             }
                         }
                     }

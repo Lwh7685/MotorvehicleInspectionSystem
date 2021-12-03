@@ -29,16 +29,16 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
                     string pathF = "D:\\Upload";
-                    if(!string.IsNullOrEmpty (systemParameterAj.Spbcdz))
+                    if (!string.IsNullOrEmpty(systemParameterAj.Spbcdz))
                     {
-                        pathF = systemParameterAj.Spbcdz ;
+                        pathF = systemParameterAj.Spbcdz;
                     }
                     string path = pathF + "\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.Month.ToString() + "\\" + DateTime.Now.Day.ToString() + "\\" + objFile.FileName.Split("_")[0] + "\\";
                     if (!Directory.Exists(path))
                     {
                         Directory.CreateDirectory(path);
                     }
-                    string aa = objFile.FileName.Split(".")[0].Split("-")[0] +"."+ objFile.FileName.Split(".")[1];
+                    string aa = objFile.FileName.Split(".")[0].Split("-")[0] + "." + objFile.FileName.Split(".")[1];
                     using (FileStream filesStream = System.IO.File.Create(path + aa))
                     {
                         objFile.CopyTo(filesStream);
@@ -61,7 +61,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// 文件流的方式输出
         /// </summary>
         /// <returns></returns>
-        [HttpPost ]
+        [HttpPost]
         public IActionResult DownloadFile()
         {
             var addrUrl = Path.Combine($"{Environment.CurrentDirectory}", @"apks\app-release.apk");
