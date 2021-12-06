@@ -3,117 +3,145 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MotorvehicleInspectionSystem.Models
 {
     /// <summary>
     /// 机动车详细信息
     /// </summary>
+    [XmlRoot("vehispara")]
     public class VehicleDetails
     {
         /// <summary>
         /// 编号
         /// </summary>
-        public string  Id { get; set; }
+        [XmlAttribute("id")]
+        public string Id { get; set; }
         /// <summary>
         ///流水号
         ///</summary>
+
         public string Lsh { get; set; }
         /// <summary>
         ///号牌号码
         ///</summary>
+        [XmlElement("hphm")]
         public string Hphm { get; set; }
         /// <summary>
         ///号牌种类
         ///</summary>
+        [XmlElement("hpzl")]
         public string Hpzl { get; set; }
         /// <summary>
         ///车辆识别代号
         ///</summary>
+        [XmlElement("clsbdh")]
         public string Clsbdh { get; set; }
         /// <summary>
         ///车辆品牌1
         ///</summary>
+        [XmlElement("clpp1")]
         public string Clpp1 { get; set; }
         /// <summary>
         ///车辆型号
         ///</summary>
+        [XmlElement("clxh")]
         public string Clxh { get; set; }
         /// <summary>
         ///车辆品牌2
         ///</summary>
+        [XmlElement("clpp2")]
         public string Clpp2 { get; set; }
         /// <summary>
         ///国产/进口
         ///</summary>
+        [XmlElement("gcjk")]
         public string Gcjk { get; set; }
         /// <summary>
         ///制造国
         ///</summary>
+        [XmlElement("zzg")]
         public string Zzg { get; set; }
         /// <summary>
         ///制造厂名称
         ///</summary>
+        [XmlElement("zzcmc")]
         public string Zzcmc { get; set; }
         /// <summary>
         ///发动机号
         ///</summary>
+        [XmlElement("fdjh")]
         public string Fdjh { get; set; }
         /// <summary>
         ///车辆类型
         ///</summary>
+        [XmlElement("cllx")]
         public string Cllx { get; set; }
         /// <summary>
         ///车身颜色
         ///</summary>
+        [XmlElement("csys")]
         public string Csys { get; set; }
         /// <summary>
         ///使用性质
         ///</summary>
+        [XmlElement("syxz")]
         public string Syxz { get; set; }
         /// <summary>
         ///身份证明号码
         ///</summary>
+        [XmlElement("sfzmhm")]
         public string Sfzmhm { get; set; }
         /// <summary>
         ///身份证明名称
         ///</summary>
+        [XmlElement("sfzmmc")]
         public string Sfzmmc { get; set; }
         /// <summary>
         ///所有人
         ///</summary>
+        [XmlElement("syr")]
         public string Syr { get; set; }
         /// <summary>
         ///初次登记日期
         ///</summary>
+        [XmlElement("ccdjrq")]
         public string Ccdjrq { get; set; }
         /// <summary>
         ///最近定检日期
         ///</summary>
+        [XmlElement("djrq")]
         public string Djrq { get; set; }
         /// <summary>
         ///检验有效期止
         ///</summary>
+        [XmlElement("yxqz")]
         public string Yxqz { get; set; }
         /// <summary>
         ///强制报废期止
         ///</summary>
+        [XmlElement("qzbfqz")]
         public string Qzbfqz { get; set; }
         /// <summary>
         ///发证机关
         ///</summary>
+        [XmlElement("fzjg")]
         public string Fzjg { get; set; }
         /// <summary>
         ///管理部门
         ///</summary>
+        [XmlElement("glbm")]
         public string Glbm { get; set; }
         /// <summary>
         ///保险终止日期
         ///</summary>
+        [XmlElement("bxzzrq")]
         public string Bxzzrq { get; set; }
         /// <summary>
         ///机动车状态
         ///</summary>
+        [XmlElement("zt")]
         public string Zt { get; set; }
         /// <summary>
         ///抵押标记   2020.09.01取消字段
@@ -122,138 +150,172 @@ namespace MotorvehicleInspectionSystem.Models
         /// <summary>
         ///发动机型号
         ///</summary>
+        [XmlElement("fdjxh")]
         public string Fdjxh { get; set; }
         /// <summary>
         ///燃料种类
         ///</summary>
+        [XmlElement("rlzl")]
         public string Rlzl { get; set; }
         /// <summary>
         ///排量
         ///</summary>
-        public string  Pl { get; set; }
+        [XmlElement("pl")]
+        public string Pl { get; set; }
         /// <summary>
         ///功率
         ///</summary>
-        public string  Gl { get; set; }
+        [XmlElement("gl")]
+        public string Gl { get; set; }
         /// <summary>
         ///转向型式
         ///</summary>
+        [XmlElement("zxxs")]
         public string Zxxs { get; set; }
         /// <summary>
         ///车外廓长
         ///</summary>
-        public string  Cwkc { get; set; }
+        [XmlElement("cwkc")]
+        public string Cwkc { get; set; }
         /// <summary>
         ///车外廓宽
         ///</summary>
-        public string  Cwkk { get; set; }
+        [XmlElement("cwkk")]
+        public string Cwkk { get; set; }
         /// <summary>
         ///车外廓高
         ///</summary>
-        public string  Cwkg { get; set; }
+        [XmlElement("cwkg")]
+        public string Cwkg { get; set; }
         /// <summary>
         ///货箱内部长度
         ///</summary>
-        public string  Hxnbcd { get; set; }
+        [XmlElement("hxnbcd")]
+        public string Hxnbcd { get; set; }
         /// <summary>
         ///货车内部宽度
         ///</summary>
-        public string  Hxnbkd { get; set; }
+        [XmlElement("hxnbkd")]
+        public string Hxnbkd { get; set; }
         /// <summary>
         ///货箱内部高度
         ///</summary>
-        public string  Hxnbgd { get; set; }
+        [XmlElement("hxnbgd")]
+        public string Hxnbgd { get; set; }
         /// <summary>
         ///钢板弹簧片数
         ///</summary>
-        public string  Gbthps { get; set; }
+        [XmlElement("gbthps")]
+        public string Gbthps { get; set; }
         /// <summary>
         ///轴数
         ///</summary>
-        public string  Zs { get; set; }
+        [XmlElement("zs")]
+        public string Zs { get; set; }
         /// <summary>
         ///轴距
         ///</summary>
-        public string  Zj { get; set; }
+        [XmlElement("zj")]
+        public string Zj { get; set; }
         /// <summary>
         ///前轮距
         ///</summary>
-        public string  Qlj { get; set; }
+        [XmlElement("qlj")]
+        public string Qlj { get; set; }
         /// <summary>
         ///后轮距
         ///</summary>
-        public string  Hlj { get; set; }
+        [XmlElement("hlj")]
+        public string Hlj { get; set; }
         /// <summary>
         ///轮胎规格
         ///</summary>
+        [XmlElement("ltgg")]
         public string Ltgg { get; set; }
         /// <summary>
         ///轮胎数
         ///</summary>
-        public string  Lts { get; set; }
+        [XmlElement("lts")]
+        public string Lts { get; set; }
         /// <summary>
         ///总质量
         ///</summary>
-        public string  Zzl { get; set; }
+        [XmlElement("zzl")]
+        public string Zzl { get; set; }
         /// <summary>
         ///整备质量
         ///</summary>
-        public string  Zbzl { get; set; }
+        [XmlElement("zbzl")]
+        public string Zbzl { get; set; }
         /// <summary>
         ///核定载质量
         ///</summary>
-        public string  Hdzzl { get; set; }
+        [XmlElement("hdzzl")]
+        public string Hdzzl { get; set; }
         /// <summary>
         ///核定载客
         ///</summary>
-        public string  Hdzk { get; set; }
+        [XmlElement("hdzk")]
+        public string Hdzk { get; set; }
         /// <summary>
         ///准牵引质量
         ///</summary>
-        public string  Zqyzl { get; set; }
+        [XmlElement("zqyzl")]
+        public string Zqyzl { get; set; }
         /// <summary>
         ///前排载客
         ///</summary>
-        public string  Qpzk { get; set; }
+        [XmlElement("qpzk")]
+        public string Qpzk { get; set; }
         /// <summary>
         ///后排载客
         ///</summary>
-        public string  Hpzk { get; set; }
+        [XmlElement("hpzk")]
+        public string Hpzk { get; set; }
         /// <summary>
         ///出厂日期
         ///</summary>
+        [XmlElement("ccrq")]
         public string Ccrq { get; set; }
         /// <summary>
         ///车辆用途
         ///</summary>
+        [XmlElement("clyt")]
         public string Clyt { get; set; }
         /// <summary>
         ///用途属性
         ///</summary>
+        [XmlElement("ytsx")]
         public string Ytsx { get; set; }
         /// <summary>
         ///行驶证编号
         ///</summary>
+        [XmlElement("xszbh")]
         public string Xszbh { get; set; }
         /// <summary>
         ///检验合格标志编号
         ///</summary>
+        [XmlElement("jyhgbzbh")]
         public string Jyhgbzbh { get; set; }
         /// <summary>
         ///行政区划
         ///</summary>
+        [XmlElement("xzqh")]
         public string Xzqh { get; set; }
         /// <summary>
         ///住所地址行政区划
         ///</summary>
+        [XmlElement("zsxzqh")]
         public string Zsxzqh { get; set; }
         /// <summary>
         ///联系地址行政区划
         ///</summary>
+        [XmlElement("zzxzqh")]
         public string Zzxzqh { get; set; }
         /// <summary>
         ///是否免检
         ///</summary>
+        [XmlElement("sfmj")]
         public string Sfmj { get; set; }
         /// <summary>
         ///乘用车
@@ -293,6 +355,7 @@ namespace MotorvehicleInspectionSystem.Models
         /// <summary>
         ///环保达标情况
         ///</summary>
+        [XmlElement("hbdbqk")]
         public string Hbdbqk { get; set; }
         /// <summary>
         ///检验日期
@@ -313,7 +376,7 @@ namespace MotorvehicleInspectionSystem.Models
         ///驻车轴数
         ///</summary>
         [JsonProperty("Zczs")]
-        public string  Zhchzhsh { get; set; }
+        public string Zhchzhsh { get; set; }
         /// <summary>
         ///驻车轴位
         ///</summary>
@@ -323,7 +386,7 @@ namespace MotorvehicleInspectionSystem.Models
         ///主轴数
         ///</summary>
         [JsonProperty("Zzs")]
-        public string  Zhzhsh { get; set; }
+        public string Zhzhsh { get; set; }
         /// <summary>
         ///前照灯制
         ///</summary>
@@ -342,12 +405,12 @@ namespace MotorvehicleInspectionSystem.Models
         ///里程表读数
         ///</summary>
         [JsonProperty("Lcbds")]
-        public string  XSLC { get; set; }
+        public string XSLC { get; set; }
         /// <summary>
         ///驱动轴数
         ///</summary>
         [JsonProperty("Qdzs")]
-        public string  Qdzhsh { get; set; }
+        public string Qdzhsh { get; set; }
         /// <summary>
         ///驱动轴位
         ///</summary>
@@ -362,7 +425,7 @@ namespace MotorvehicleInspectionSystem.Models
         ///最大设计车速 km/h
         ///</summary>
         [JsonProperty("Zdsjcs")]
-        public string  Max_SD { get; set; }
+        public string Max_SD { get; set; }
         /// <summary>
         ///直接档位
         ///</summary>
@@ -380,7 +443,7 @@ namespace MotorvehicleInspectionSystem.Models
         /// <summary>
         ///气缸数
         ///</summary>
-        public string  Qgs { get; set; }
+        public string Qgs { get; set; }
         /// <summary>
         ///燃油规格
         ///</summary>
@@ -402,7 +465,7 @@ namespace MotorvehicleInspectionSystem.Models
         ///额定转速
         ///</summary>
         [JsonProperty("Edzs")]
-        public string  Edzhs { get; set; }
+        public string Edzhs { get; set; }
         /// <summary>
         ///并装轴位
         ///</summary>
@@ -421,12 +484,12 @@ namespace MotorvehicleInspectionSystem.Models
         ///前轴数
         ///</summary>
         [JsonProperty("Qzs")]
-        public string  Qzhsh { get; set; }
+        public string Qzhsh { get; set; }
         /// <summary>
         ///转向轴数
         ///</summary>
         [JsonProperty("Zxzs")]
-        public string  Zhxzhsh { get; set; }
+        public string Zhxzhsh { get; set; }
         /// <summary>
         ///综检检验类别   等级/在用
         ///</summary>
@@ -456,7 +519,7 @@ namespace MotorvehicleInspectionSystem.Models
         ///排气管数
         ///</summary>
         [JsonProperty("Pqgs")]
-        public string  Pqgsh { get; set; }
+        public string Pqgsh { get; set; }
         /// <summary>
         ///进气方式
         ///</summary>
@@ -493,6 +556,6 @@ namespace MotorvehicleInspectionSystem.Models
         /// 环检流水号
         /// </summary>
         public string Hjlsh { get; set; }
-        
+
     }
 }

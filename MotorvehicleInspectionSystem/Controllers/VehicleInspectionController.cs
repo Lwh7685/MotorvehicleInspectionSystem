@@ -172,6 +172,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         AppVersion[] appVersions = QC.LYYDJKR021(responseData );
                         responseData.Body = appVersions;
                         break;
+                    case "LYYDJKR022":
+                        VehicleDetails[] vehicleDetails1 = QC.LYYDJKR022(requestData,responseData);
+                        responseData.Body = vehicleDetails1;
+                        break;
                     default:
                         responseData.Code = "-7";
                         responseData.Message = "上传正确的接口编号（jkId）";

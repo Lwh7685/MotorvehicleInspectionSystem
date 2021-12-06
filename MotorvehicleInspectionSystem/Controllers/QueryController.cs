@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using System.Web;
+using System.Xml;
 
 namespace MotorvehicleInspectionSystem.Controllers
 {
@@ -345,7 +347,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         //车辆识别代号
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Clsbdh))
                         {
+                            //在安检的时候，车辆识别代号不为空的时候，从监管平台获取，不再从数据库查询
                             sql += "and tn.clsbdh like '%" + queryVehicleDetailsR005.Clsbdh.Trim().Replace("'", "").Replace("-", "") + "'";
+
+
                         }
                         //行驶证编号
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Xszbh))
@@ -384,7 +389,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         //车辆识别代号
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Clsbdh))
                         {
-                            sql += "and t2.clsbdh like '%" + queryVehicleDetailsR005.Clsbdh.Trim().Replace("'", "").Replace("-", "") + "'";
+                            sql += "and t1.clsbdh like '%" + queryVehicleDetailsR005.Clsbdh.Trim().Replace("'", "").Replace("-", "") + "'";
                         }
                         //行驶证编号
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Xszbh))
@@ -1777,13 +1782,67 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return appVersions.ToArray();
         }
-        //private void apkDecoder_InfoParsed(ApkDecoder apkDecoder)
-        //{
-        //    this.Invoke(new Action<ApkDecoder>(SafeInfoParsed), apkDecoder);
-        //}
-        //private void SafeInfoParsed(ApkDecoder apkDecoder)
-        //{
-           
-        //}
+        
+        /// <summary>
+        /// 机动车信息联网查询(安检平台)
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public VehicleDetails[] LYYDJKR022(RequestData requestData ,ResponseData responseData )
+        {
+            List<VehicleDetails> vehicleDetails = new List<VehicleDetails>();
+            SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
+            string code = "-1";
+            try
+            {
+                NetworkQueryR022 networkQueryR022 = JSONHelper.ConvertObject<NetworkQueryR022>(requestData.Body[0]);
+                string xmlDocStr = XMLHelper.XmlSerializeStr<NetworkQueryR022>(networkQueryR022,"Query");
+                //xmlDocStr = HttpUtility.UrlEncode(xmlDocStr);
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xmlDocStr);
+                xmlDocument.Save(@"D:\TestXml\18C49_S.xml");
+                //调用接口
+                //string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", systemParameterAj.Jkxlh , "18C49", xmlDocStr);
+                //resultXml = HttpUtility.UrlEncode(resultXml);
+                ////分析返回结果
+                //XmlDocument doc = new XmlDocument();
+                //doc.LoadXml(resultXml);
+                //doc.Save(@"D:\TestXml\18C49_R.xml");
+
+                XmlDocument doc = new XmlDocument();
+                doc.Load(@"D:\TestXml\18C49_R.xml");
+                code = XMLHelper.GetNodeValue(doc, "code");
+                if(code == "1")
+                {
+                    VehicleDetails o = XMLHelper.DESerializer<VehicleDetails>(XMLHelper.GetNodeXML (doc, "body") );
+                    vehicleDetails.Add(o);
+                    responseData.Code = "1";
+                    responseData.Message = "SUCCESS";
+                }
+                else
+                {
+                    responseData.Code = code;
+                    responseData.Message = XMLHelper.GetNodeValue(doc, "Message");
+                }
+                
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return vehicleDetails.ToArray();
+        }
     }
 }

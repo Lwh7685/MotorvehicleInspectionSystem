@@ -1,4 +1,5 @@
-﻿using MotorvehicleInspectionSystem.Models.Request;
+﻿using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.Request;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -48,18 +49,28 @@ namespace MotorvehicleInspectionSystem.Tools
                     return serializer.Deserialize(sr) as T;
                 }
             }
-            catch 
+            catch (Exception ex)
             {
+                string a = ex.Message;
                 return null;
             }
         }
         
-        public static string XmlSerializeStr<T>(T obj)
+
+
+        public static string XmlSerializeStr<T>(T obj, string jklb="Write")
         {
             try
             {
                 Root r = new Root();
-                r.vehispara = obj;
+                if(jklb == "Write")
+                {
+                    r.vehispara = obj;
+                }
+                else
+                {
+                    r.QueryCondition = obj;
+                }
                 //转换
                 string strrxml = XmlSerialize<Root>(r);
                 //返回
@@ -85,6 +96,14 @@ namespace MotorvehicleInspectionSystem.Tools
             else
                 return xmlnode.InnerText;
         }
+        public static string GetNodeXML(XmlDocument xmlDou, string nodeName, string defaultValue = "")
+        {
+            XmlNode xmlnode = xmlDou.SelectSingleNode(".//" + nodeName);
+            if (xmlnode == null)
+                return defaultValue;
+            else
+                return xmlnode.InnerXml ;
+        }
         /// <summary>
         /// 添加节点
         /// </summary>
@@ -108,13 +127,17 @@ namespace MotorvehicleInspectionSystem.Tools
     [System.Xml.Serialization.XmlInclude(typeof(ProjectDataF1))]
     [System.Xml.Serialization.XmlInclude(typeof(ProjectDataDC))]
     [System.Xml.Serialization.XmlInclude(typeof(ProjectDataC1))]
+    [System.Xml.Serialization.XmlInclude(typeof(NetworkQueryR022 ))]
+    [XmlInclude(typeof(VehicleDetails))]
+    
     public partial class Root
     {
         public dynamic vehispara { get; set; }//接受动态业务类型 
+        public dynamic QueryCondition { get; set; }
     }
     public class Utf8StringWriter : StringWriter
     {
         public override Encoding Encoding => Encoding.UTF8;
     }
-
+    
 }
