@@ -73,6 +73,34 @@ namespace MotorvehicleInspectionSystem.Controllers
             return users.ToArray();
 
         }
+
+        public SaveResult[] LYYDJKW003(RequestData requestData, ResponseData responseData)
+        {
+            List<SaveResult> saveResults = new List<SaveResult>();
+            try
+            {
+
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return saveResults.ToArray();
+        }
+
         /// <summary>
         /// 保存签名
         /// </summary>
@@ -340,7 +368,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             try
                             {
-                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh ,inspectionVideoW008.Spbhaj ,dbAj,"Aj");
+                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh, inspectionVideoW008.Spbhaj, dbAj, "Aj");
                                 //先删除
                                 sql = "delete from UpLoad_AVI_XML where jcbh ='" + inspectionVideoW008.Ajlsh + "' and jklx ='" + inspectionVideoW008.Ajjccs + "' and xmbh ='" + inspectionVideoW008.Spbhaj + "'";
                                 dbAj.ExecuteNonQuery(sql, null);
@@ -385,7 +413,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             try
                             {
-                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh, inspectionVideoW008.Spbhhj , dbHj, "Hj");
+                                string lxxx = QueryIPCInfo(inspectionVideoW008.Jcxh, inspectionVideoW008.Spbhhj, dbHj, "Hj");
                                 //先删除
                                 sql = "delete from UpLoad_AVI_XML where jcbh ='" + inspectionVideoW008.Hjlsh + "' and jklx ='" + inspectionVideoW008.Hjjccs + "' and xmbh ='" + inspectionVideoW008.Spbhhj + "'";
                                 dbHj.ExecuteNonQuery(sql, null);
@@ -407,7 +435,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " '" + inspectionVideoW008.Clpp + "',";// ,< clpp, varchar(48),>
                                 sql += " '" + inspectionVideoW008.Czdw + "',";// ,< czdw, varchar(125),>
                                 sql += " '0',";// ,< upload_OK, varchar(4),>
-                                sql += " '" + lxxx  + "',";// ,< InBz_01, varchar(72),>
+                                sql += " '" + lxxx + "',";// ,< InBz_01, varchar(72),>
                                 sql += " '" + inspectionVideoW008.Hjdlsj + "')";// ,< InBz_05, varchar(16),>)";
                                 dbHj.ExecuteNonQuery(sql, null);
                                 saveResult.BcjgHj = "success";
@@ -461,7 +489,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 string lxxx = "";
                 if (ajrohj == "Aj")
                 {
-                    string sql = "select * from T_IPCInfo where Jcxh='"+jcxh +"' and Gw_DM ='"+jcxm +"'";
+                    string sql = "select * from T_IPCInfo where Jcxh='" + jcxh + "' and Gw_DM ='" + jcxm + "'";
                     DataTable dataTable = dbUtility.ExecuteDataTable(sql, null);
                     if (dataTable.Rows.Count > 0)
                     {
@@ -470,7 +498,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 }
                 else
                 {
-                    string sql = "select * from T_IPCInfo where LineNumber ='"+jcxh +"' and WorkplaceCode ='"+jcxm +"'";
+                    string sql = "select * from T_IPCInfo where LineNumber ='" + jcxh + "' and WorkplaceCode ='" + jcxm + "'";
                     DataTable dataTable = dbUtility.ExecuteDataTable(sql, null);
                     if (dataTable.Rows.Count > 0)
                     {

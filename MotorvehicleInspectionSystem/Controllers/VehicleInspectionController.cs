@@ -246,6 +246,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         User[] users = WC.LYYDJKW001(requestData, responseData);
                         responseData.Body = users;
                         break;
+                    case "LYYDJKW003":
+                        SaveResult[] saveResults003 = WC.LYYDJKW003(requestData, responseData);
+                        responseData.Body = saveResults003;
+                        break;
                     //保存签名
                     case "LYYDJKW006":
                         SaveResult[] saveResults006 = WC.LYYDJKW006(requestData, responseData);

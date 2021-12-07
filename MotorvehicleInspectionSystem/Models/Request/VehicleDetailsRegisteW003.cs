@@ -5,23 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace MotorvehicleInspectionSystem.Models
+namespace MotorvehicleInspectionSystem.Models.Request
 {
-    /// <summary>
-    /// 机动车详细信息
-    /// </summary>
-    [XmlRoot("vehispara")]
-    public class VehicleDetails
+    public class VehicleDetailsRegisteW003
     {
         /// <summary>
         /// 编号
         /// </summary>
         [XmlAttribute("id")]
         public string Id { get; set; }
-        /// <summary>
-        ///流水号
-        ///</summary>
-        public string Lsh { get; set; }
         /// <summary>
         ///号牌号码
         ///</summary>
@@ -555,6 +547,99 @@ namespace MotorvehicleInspectionSystem.Models
         /// 环检流水号
         /// </summary>
         public string Hjlsh { get; set; }
-
+        /// <summary>
+        /// 安检检验机构编号
+        /// </summary>
+        public string Jyjgbh { get; set; }
+        /// <summary>
+        /// 检测线号
+        /// </summary>
+        public string Jcxh { get; set; }
+            /// <summary>
+            /// 机动车序号
+            /// </summary>
+        public string Xh { get; set; }
+        /// <summary>
+        /// 检测项目安检
+        /// </summary>
+        public string JcxmAj { get; set; }
+        /// <summary>
+        /// 检测项目环检
+        /// </summary>
+        public string JcxmHJ { get; set; }
+        /// <summary>
+        /// 检测方法环检
+        /// </summary>
+        public string JcffHJ { get; set; }
+        /// <summary>
+        /// 检测业务综检
+        /// </summary>
+        public string JyywZj { get; set; }
+        /// <summary>
+        /// 不合格项
+        /// </summary>
+        public string Bhgx { get; set; }
+        /// <summary>
+        /// 登录时间
+        /// </summary>
+        public string Dlsj { get; set; }
+        /// <summary>
+        /// 安检检测次数
+        /// </summary>
+        public int? Ajjccs { get; set; }
+        /// <summary>
+        /// 环检检测次数
+        /// </summary>
+        public int? Hjjccs { get; set; }
+        /// <summary>
+        /// 登录员姓名
+        /// </summary>
+        public string Dly { get; set; }
+        /// <summary>
+        /// 登录员身份证号
+        /// </summary>
+        public string Dlysfzh { get; set; }
+        /// <summary>
+        /// 引车员
+        /// </summary>
+        public string Ycy { get; set; }
+        /// <summary>
+        /// 引车员身份证号
+        /// </summary>
+        public string Ycysfzh { get; set; }
+        /// <summary>
+        /// 外检员
+        /// </summary>
+        public string Wjy { get; set; }
+        /// <summary>
+        /// 外检员身份证
+        /// </summary>
+        public string Wjysfzh { get; set; }
+        /// <summary>
+        /// 动态检验员
+        /// </summary>
+        public string Dtjyy { get; set; }
+        /// <summary>
+        /// 动态检验员身份证号
+        /// </summary>
+        public string Dtjyysfzh { get; set; }
+        /// <summary>
+        /// 底盘检验员
+        /// </summary>
+        public string Dpjyy { get; set; }
+        /// <summary>
+        /// 底盘检验员身份证
+        /// </summary>
+        public string Dpjyysfzh { get; set; }
+        public string SCR { get; set; }
+        public string DPF { get; set; }
+        /// <summary>
+        /// 程冲数
+        /// </summary>
+        public int? Ccs { get; set; }
+        /// <summary>
+        /// 后处理方式
+        /// </summary>
+        public string Hclfs { get; set; }
     }
 }
