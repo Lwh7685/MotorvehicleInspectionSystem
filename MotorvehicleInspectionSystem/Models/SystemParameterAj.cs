@@ -23,6 +23,7 @@ namespace MotorvehicleInspectionSystem.Models
                 Fwqdz = dataTable.Rows[0]["controlIP"].ToString();
                 Spbcdz = dataTable.Rows[0]["Web_VideoRecordPath"].ToString();//Web_VideoRecordPath
                 Jkxlh = dataTable.Rows[0]["Web_Pass"].ToString();
+                AppointmentURL = dataTable.Rows[0]["appointmentURL"].ToString();//appointmentURL
             }
         }
 
@@ -46,5 +47,9 @@ namespace MotorvehicleInspectionSystem.Models
         /// 接口序列号
         /// </summary>
         public string Jkxlh { get; set; }
+        /// <summary>
+        /// 预约查询接口
+        /// </summary>
+        public string AppointmentURL { get; set; }
     }
 }

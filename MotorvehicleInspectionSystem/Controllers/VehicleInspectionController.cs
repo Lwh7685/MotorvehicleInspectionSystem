@@ -140,6 +140,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         InCar[] inCars = QC.LYYDJKR009(responseData);
                         responseData.Body = inCars;
                         break;
+                    case "LYYDJKR010":
+                        AppointmentEntityAj.ResponseAppointmentAjR010[] responseAppointmentAjR010s = QC.LYYDJKR010(responseData);
+                        responseData.Body = responseAppointmentAjR010s;
+                        break;
                     case "LYYDJKR011":
                         ServerTimeR011[] dateTimes = QC.LYYDJKR011(responseData);
                         responseData.Body = dateTimes;
@@ -175,6 +179,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                     case "LYYDJKR022":
                         VehicleDetails[] vehicleDetails1 = QC.LYYDJKR022(requestData,responseData);
                         responseData.Body = vehicleDetails1;
+                        break;
+                    case "LYYDJKR023":
+                        AdministrativeRegionR023[] administrativeRegionR023s = QC.LYYDJKR023(responseData);
+                        responseData.Body = administrativeRegionR023s;
                         break;
                     default:
                         responseData.Code = "-7";

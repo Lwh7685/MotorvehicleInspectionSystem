@@ -79,6 +79,50 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<SaveResult> saveResults = new List<SaveResult>();
             try
             {
+                VehicleDetailsRegisteW003 vehicleDetailsRegisteW003 = JSONHelper.ConvertObject<VehicleDetailsRegisteW003>(requestData.Body[0]);
+                //判断安检业务类别
+                if (vehicleDetailsRegisteW003.Ajywlb != "-")
+                {
+                    if (VehicleInspectionController.SyAj != "1")
+                    {
+                        responseData.Code = "-9";
+                        responseData.Message = "检测站不包含安检业务";
+                        return saveResults.ToArray();
+                    }
+                    string code = "-1";
+                    string[] ajywlbLw = new string[] { "00", "01", "02", "03", "04" };
+                    SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
+                    if (ajywlbLw.Contains(vehicleDetailsRegisteW003.Ajywlb) && systemParameterAj.Jcfs == "1")
+                    {
+                        string xmlDocStr = XMLHelper.XmlSerializeStr<VehicleDetailsRegisteW003>(vehicleDetailsRegisteW003);
+                        XmlDocument xmlDocument = new XmlDocument();
+                        xmlDocument.LoadXml(xmlDocStr);
+                        xmlDocument.Save(@"D:\TestXml\18C51_S.xml");
+                        //调用接口
+                        string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", systemParameterAj.Jkxlh, "18C51", xmlDocStr);
+                        //分析返回结果
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(resultXml);
+                        code = XMLHelper.GetNodeValue(doc, "code");
+                        //记录接口日志
+                        if (code != "1")
+                        {
+                            responseData.Code = "-1";
+                            responseData.Message = resultXml;
+                            return saveResults.ToArray();
+                        }
+                    }
+                    else
+                    {
+                        code = "1";
+                    }
+
+                    //保存 baseinfo_net
+
+                    //保存  baseinfo_hand
+
+
+                }
 
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
@@ -643,7 +687,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         if (code != "1")
                         {
                             responseData.Code = "-1";
-                            responseData.Message = "resultXml";
+                            responseData.Message = resultXml;
                         }
                     }
                     else
@@ -1846,7 +1890,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="jyy">检验员</param>
         /// <param name="dbUtility">数据库连接</param>
         /// <returns></returns>
-        public bool updateJcxmStatusHj(string lsh, string jcxm, string status, string jcxh, string jyy, DbUtility dbUtility)
+        public bool UpdateJcxmStatusHj(string lsh, string jcxm, string status, string jcxh, string jyy, DbUtility dbUtility)
         {
             try
             {
@@ -1866,6 +1910,98 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 return false;
             }
+        }
+        /// <summary>
+        /// 保存安检数据库 Baseinfo_net
+        /// </summary>
+        /// <param name="vehicleDetailsRegisteW003"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        public bool SaveBaseinfoNetAj(VehicleDetailsRegisteW003 vehicleDetailsRegisteW003, DbUtility dbUtility)
+        {
+            try
+            {
+                string sql = "INSERT INTO [dbo].[BaseInfo_Net] ";
+                sql += " ([Lsh],[hpzl],[hphm],[clpp1],[clxh],[clpp2],[gcjk],[zzg],[zzcmc],[clsbdh],[fdjh],[cllx] ";
+                sql += " ,[csys],[syxz],[sfzmhm],[sfzmmc],[syr],[ccdjrq],[djrq],[yxqz],[qzbfqz],[fzjg],[glbm],[bxzzrq],[zt] ";
+                sql += " ,[dybj],[fdjxh],[rlzl],[pl],[gl],[zxxs],[cwkc],[cwkk],[cwkg],[hxnbcd],[hxnbkd],[hxnbgd],[gbthps] ";
+                sql += " ,[zs],[zj],[qlj],[hlj],[ltgg],[lts],[zzl],[zbzl],[hdzzl],[hdzk],[zqyzl],[qpzk],[hpzk],[hbdbqk],[ccrq] ";
+                sql += " ,[clyt],[ytsx],[xszbh],[jyhgbzbh],[xzqh],[zsxzqh],[zzxzqh],[sgcssbwqk],[sfmj],[bmjyy],[sfxny],[xnyzl],[sfazwb],[wbzl],[qxclzhxx]) VALUES( ";
+                sql += " '" + vehicleDetailsRegisteW003.Ajlsh + "',";// (< Lsh, varchar(32),>
+                sql += " '" + vehicleDetailsRegisteW003.Hpzl + "',";// ,< hpzl, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Hphm + "',";// ,< hphm, varchar(15),>
+                sql += " '" + vehicleDetailsRegisteW003.Clpp1 + "',";// ,< clpp1, varchar(32),>
+                sql += " '" + vehicleDetailsRegisteW003.Clxh + "',";// ,< clxh, varchar(32),>
+                sql += " '" + vehicleDetailsRegisteW003.Clpp2 + "',";//  ,< clpp2, varchar(32),>
+                sql += " '" + vehicleDetailsRegisteW003.Gcjk + "',";//  ,< gcjk, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzg + "',";//  ,< zzg, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzcmc + "',";//  ,< zzcmc, varchar(64),>
+                sql += " '" + vehicleDetailsRegisteW003.Clsbdh + "',";// ,< clsbdh, varchar(25),>
+                sql += " '" + vehicleDetailsRegisteW003.Fdjh + "',";//  ,< fdjh, varchar(30),>
+                sql += " '" + vehicleDetailsRegisteW003.Cllx + "',";// ,< cllx, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Csys + "',";// ,< csys, varchar(5),>
+                sql += " '" + vehicleDetailsRegisteW003.Syxz + "',";//  ,< syxz, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Sfzmhm + "',";//  ,< sfzmhm, varchar(18),>
+                sql += " '" + vehicleDetailsRegisteW003.Sfzmmc + "',";//  ,< sfzmmc, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Syr + "',";//  ,< syr, varchar(128),>
+                sql += " '" + vehicleDetailsRegisteW003.Ccdjrq + "',";//  ,< ccdjrq, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Djrq + "',";//  ,< djrq, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Yxqz + "',";//  ,< yxqz, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Qzbfqz + "',";//  ,< qzbfqz, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Fzjg + "',";//  ,< fzjg, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Glbm + "',";//  ,< glbm, varchar(12),>
+                sql += " " + vehicleDetailsRegisteW003.Bxzzrq + "',";//  ,< bxzzrq, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Zt + "',";//  ,< zt, varchar(6),>
+                sql += " '" + vehicleDetailsRegisteW003.Dybj + "',";//  ,< dybj, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Fdjxh + "',";//  ,< fdjxh, varchar(64),>
+                sql += " '" + vehicleDetailsRegisteW003.Rlzl + "',";//  ,< rlzl, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Pl + "',";//  ,< pl, varchar(6),>
+                sql += " '" + vehicleDetailsRegisteW003.Gl + "',";//  ,< gl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Zxxs + "',";//  ,< zxxs, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Cwkc + "',";//  ,< cwkc, varchar(5),>
+                sql += " '" + vehicleDetailsRegisteW003.Cwkk + "',";//  ,< cwkk, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Cwkg + "',";//  ,< cwkg, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Hxnbcd + "',";//  ,< hxnbcd, varchar(5),>
+                sql += " '" + vehicleDetailsRegisteW003.Hxnbkd  + "',";// ,< hxnbkd, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Hxnbgd  + "',";//  ,< hxnbgd, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Gbthps  + "',";//  ,< gbthps, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zs  + "',";//  ,< zs, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zj  + "',";//  ,< zj, varchar(5),>
+                sql += " '" + vehicleDetailsRegisteW003.Qlj  + "',";//  ,< qlj, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Hlj  + "',";//  ,< hlj, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Ltgg  + "',";//  ,< ltgg, varchar(64),>
+                sql += " '" + vehicleDetailsRegisteW003.Lts  + "',";//  ,< lts, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzl  + "',";//  ,< zzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Zbzl  + "',";//  ,< zbzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Hdzzl  + "',";//  ,< hdzzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Hdzk  + "',";//  ,< hdzk, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zqyzl  + "',";//  ,< zqyzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Qpzk  + "',";// ,< qpzk, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Hpzk  + "',";// ,< hpzk, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Hbdbqk  + "',";// ,< hbdbqk, varchar(128),>
+                sql += " '" + vehicleDetailsRegisteW003.Ccrq  + "',";//  ,< ccrq, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Clyt  + "',";//  ,< clyt, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Ytsx  + "',";//  ,< ytsx, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Xszbh  + "',";// ,< xszbh, varchar(20),>
+                sql += " '" + vehicleDetailsRegisteW003.Jyhgbzbh  + "',";//  ,< jyhgbzbh, varchar(20),>
+                sql += " '" + vehicleDetailsRegisteW003.Xzqh  + "',";//  ,< xzqh, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Zsxzqh  + "',";//  ,< zsxzqh, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzxzqh  + "',";//  ,< zzxzqh, varchar(10),>
+                sql += " '" + "" + "',";//  ,< sgcssbwqk, varchar(4000),>
+                sql += " '" + vehicleDetailsRegisteW003.Sfmj  + "',";//  ,< sfmj, varchar(1),>
+                sql += " '" + "" + "',";//  ,< bmjyy, varchar(4000),>
+                sql += " '" + "" + "',";//  ,< sfxny, varchar(1),>
+                sql += " '" + "" + "',";//  ,< xnyzl, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Sfazwb  + "',";//  ,< sfazwb, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Wbzl  + "',";//  ,< wbzl, varchar(8),>
+                sql += " '"+vehicleDetailsRegisteW003.Qxclzhxx +"')";//  ,< qxclzhxx, varchar(4000),>)";
+                dbUtility.ExecuteNonQuery(sql, null);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

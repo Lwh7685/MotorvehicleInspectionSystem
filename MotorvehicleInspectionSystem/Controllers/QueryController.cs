@@ -5,12 +5,15 @@ using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.ServiceModel;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
@@ -847,7 +850,81 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return inCars.ToArray();
         }
-
+        /// <summary>
+        /// 查询安检预约情况
+        /// </summary>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public AppointmentEntityAj.ResponseAppointmentAjR010[] LYYDJKR010(ResponseData responseData)
+        {
+            List<AppointmentEntityAj.ResponseAppointmentAjR010> responseAppointmentAjR010s = new List<AppointmentEntityAj.ResponseAppointmentAjR010>();
+            try
+            {
+                SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
+                Dictionary<string, string> @params = new Dictionary<string, string>();
+                @params.Add("jyjgbh", systemParameterAj.Jyjgbh);
+                string methordName = "/check-station/api/actived-appointment";
+                string retrunStr = AppointmentAj(systemParameterAj.AppointmentURL + methordName, @params);
+                JsonSerializerSettings jsonSetting = new JsonSerializerSettings();
+                jsonSetting.NullValueHandling = NullValueHandling.Ignore;
+                AppointmentEntityAj.ACTIVEDRETURN aCTIVEDRETURN = JsonConvert.DeserializeObject<AppointmentEntityAj.ACTIVEDRETURN>(retrunStr, jsonSetting);
+                responseAppointmentAjR010s = aCTIVEDRETURN.data.ToList<AppointmentEntityAj.ResponseAppointmentAjR010>();
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException ex)
+            {
+                responseData.Code = "-99";
+                responseData.Message = ex.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return responseAppointmentAjR010s.ToArray();
+        }
+        /// <summary>
+        /// 查询安检预约情况
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        public static string AppointmentAj(string url, Dictionary<string, string> dic)
+        {
+            string result = "";
+            StringBuilder builder = new StringBuilder();
+            builder.Append(url);
+            if (dic.Count > 0)
+            {
+                builder.Append("?");
+                int i = 0;
+                foreach (var item in dic)
+                {
+                    if ((i > 0))
+                        builder.Append("&");
+                    builder.AppendFormat("{0}={1}", item.Key, item.Value);
+                    i += 1;
+                }
+            }
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(builder.ToString());
+            // '添加参数
+            HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+            Stream stream = resp.GetResponseStream();
+            try
+            {
+                // '获取内容
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    result = reader.ReadToEnd();
+                }
+            }
+            finally
+            {
+                stream.Close();
+            }
+            return result;
+        }
         /// <summary>
         /// 查询服务器时间（时间同步）
         /// </summary>
@@ -1761,7 +1838,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 ApkDecoder apkDecoder = new ApkDecoder();
                 appVersion.Version = apkDecoder.AppVersion;
                 appVersion.VersionCode = apkDecoder.AppVersionCode;
-                appVersions.Add(appVersion );
+                appVersions.Add(appVersion);
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -1782,14 +1859,14 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return appVersions.ToArray();
         }
-        
+
         /// <summary>
         /// 机动车信息联网查询(安检平台)
         /// </summary>
         /// <param name="requestData"></param>
         /// <param name="responseData"></param>
         /// <returns></returns>
-        public VehicleDetails[] LYYDJKR022(RequestData requestData ,ResponseData responseData )
+        public VehicleDetails[] LYYDJKR022(RequestData requestData, ResponseData responseData)
         {
             List<VehicleDetails> vehicleDetails = new List<VehicleDetails>();
             SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
@@ -1797,7 +1874,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 NetworkQueryR022 networkQueryR022 = JSONHelper.ConvertObject<NetworkQueryR022>(requestData.Body[0]);
-                string xmlDocStr = XMLHelper.XmlSerializeStr<NetworkQueryR022>(networkQueryR022,"Query");
+                string xmlDocStr = XMLHelper.XmlSerializeStr<NetworkQueryR022>(networkQueryR022, "Query");
                 //xmlDocStr = HttpUtility.UrlEncode(xmlDocStr);
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.LoadXml(xmlDocStr);
@@ -1813,9 +1890,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                 XmlDocument doc = new XmlDocument();
                 doc.Load(@"D:\TestXml\18C49_R.xml");
                 code = XMLHelper.GetNodeValue(doc, "code");
-                if(code == "1")
+                if (code == "1")
                 {
-                    VehicleDetails o = XMLHelper.DESerializer<VehicleDetails>(XMLHelper.GetNodeXML (doc, "body") );
+                    VehicleDetails o = XMLHelper.DESerializer<VehicleDetails>(XMLHelper.GetNodeXML(doc, "body"));
                     vehicleDetails.Add(o);
                     responseData.Code = "1";
                     responseData.Message = "SUCCESS";
@@ -1825,7 +1902,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     responseData.Code = code;
                     responseData.Message = XMLHelper.GetNodeValue(doc, "Message");
                 }
-                
+
             }
             catch (ArgumentNullException)
             {
@@ -1844,5 +1921,40 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return vehicleDetails.ToArray();
         }
+        /// <summary>
+        /// 查询行政区划
+        /// </summary>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public AdministrativeRegionR023[] LYYDJKR023(ResponseData responseData)
+        {
+            List<AdministrativeRegionR023> administrativeRegionR023s = new List<AdministrativeRegionR023>();
+            string sql;
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                sql = "select * from tb_xzqh ";
+                administrativeRegionR023s = dbAj.QueryForList<AdministrativeRegionR023>(sql, null);
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return administrativeRegionR023s.ToArray();
+        }
+
     }
 }
