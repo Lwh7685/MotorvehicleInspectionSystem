@@ -73,7 +73,12 @@ namespace MotorvehicleInspectionSystem.Controllers
             return users.ToArray();
 
         }
-
+        /// <summary>
+        /// 车辆信息登记
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
         public SaveResult[] LYYDJKW003(RequestData requestData, ResponseData responseData)
         {
             List<SaveResult> saveResults = new List<SaveResult>();
@@ -89,6 +94,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Message = "检测站不包含安检业务";
                         return saveResults.ToArray();
                     }
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                     string code = "-1";
                     string[] ajywlbLw = new string[] { "00", "01", "02", "03", "04" };
                     SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
@@ -118,12 +124,61 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
 
                     //保存 baseinfo_net
-
+                    if(SaveBaseinfoNetAj (vehicleDetailsRegisteW003,dbAj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveBaseinfoNetAj保存失败";
+                        return saveResults.ToArray();
+                    }
                     //保存  baseinfo_hand
-
-
+                    if(SaveBaseinfoHandAj (vehicleDetailsRegisteW003 ,dbAj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveBaseinfoHandAj保存失败";
+                        return saveResults.ToArray();
+                    }
+                    //保存
+                    if (SaveFlowInfoAj (vehicleDetailsRegisteW003, dbAj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveFlowInfoAj保存失败";
+                        return saveResults.ToArray();
+                    }
+                    if (SaveFlowdataAj (vehicleDetailsRegisteW003, dbAj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveFlowdataAj保存失败";
+                        return saveResults.ToArray();
+                    }
+                    if (SaveCoverdataAj (vehicleDetailsRegisteW003, dbAj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveCoverdataAj保存失败";
+                        return saveResults.ToArray();
+                    }
                 }
-
+                if(vehicleDetailsRegisteW003 .Hjywlb != "-")
+                {
+                    if (VehicleInspectionController.SyHj != "1")
+                    {
+                        responseData.Code = "-10";
+                        responseData.Message = "检测站不包含环检业务";
+                        return saveResults.ToArray();
+                    }
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    if (SaveBaseinfoNetHj (vehicleDetailsRegisteW003, dbHj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveBaseinfoNetHj保存失败";
+                        return saveResults.ToArray();
+                    }
+                    if (SaveJcFlowHj (vehicleDetailsRegisteW003, dbHj))
+                    {
+                        responseData.Code = "-1";
+                        responseData.Message = "SaveJcFlowHj保存失败";
+                        return saveResults.ToArray();
+                    }
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -1962,39 +2017,39 @@ namespace MotorvehicleInspectionSystem.Controllers
                 sql += " '" + vehicleDetailsRegisteW003.Cwkk + "',";//  ,< cwkk, varchar(4),>
                 sql += " '" + vehicleDetailsRegisteW003.Cwkg + "',";//  ,< cwkg, varchar(4),>
                 sql += " '" + vehicleDetailsRegisteW003.Hxnbcd + "',";//  ,< hxnbcd, varchar(5),>
-                sql += " '" + vehicleDetailsRegisteW003.Hxnbkd  + "',";// ,< hxnbkd, varchar(4),>
-                sql += " '" + vehicleDetailsRegisteW003.Hxnbgd  + "',";//  ,< hxnbgd, varchar(4),>
-                sql += " '" + vehicleDetailsRegisteW003.Gbthps  + "',";//  ,< gbthps, varchar(3),>
-                sql += " '" + vehicleDetailsRegisteW003.Zs  + "',";//  ,< zs, varchar(3),>
-                sql += " '" + vehicleDetailsRegisteW003.Zj  + "',";//  ,< zj, varchar(5),>
-                sql += " '" + vehicleDetailsRegisteW003.Qlj  + "',";//  ,< qlj, varchar(4),>
-                sql += " '" + vehicleDetailsRegisteW003.Hlj  + "',";//  ,< hlj, varchar(4),>
-                sql += " '" + vehicleDetailsRegisteW003.Ltgg  + "',";//  ,< ltgg, varchar(64),>
-                sql += " '" + vehicleDetailsRegisteW003.Lts  + "',";//  ,< lts, varchar(2),>
-                sql += " '" + vehicleDetailsRegisteW003.Zzl  + "',";//  ,< zzl, varchar(8),>
-                sql += " '" + vehicleDetailsRegisteW003.Zbzl  + "',";//  ,< zbzl, varchar(8),>
-                sql += " '" + vehicleDetailsRegisteW003.Hdzzl  + "',";//  ,< hdzzl, varchar(8),>
-                sql += " '" + vehicleDetailsRegisteW003.Hdzk  + "',";//  ,< hdzk, varchar(3),>
-                sql += " '" + vehicleDetailsRegisteW003.Zqyzl  + "',";//  ,< zqyzl, varchar(8),>
-                sql += " '" + vehicleDetailsRegisteW003.Qpzk  + "',";// ,< qpzk, varchar(1),>
-                sql += " '" + vehicleDetailsRegisteW003.Hpzk  + "',";// ,< hpzk, varchar(2),>
-                sql += " '" + vehicleDetailsRegisteW003.Hbdbqk  + "',";// ,< hbdbqk, varchar(128),>
-                sql += " '" + vehicleDetailsRegisteW003.Ccrq  + "',";//  ,< ccrq, varchar(24),>
-                sql += " '" + vehicleDetailsRegisteW003.Clyt  + "',";//  ,< clyt, varchar(2),>
-                sql += " '" + vehicleDetailsRegisteW003.Ytsx  + "',";//  ,< ytsx, varchar(1),>
-                sql += " '" + vehicleDetailsRegisteW003.Xszbh  + "',";// ,< xszbh, varchar(20),>
-                sql += " '" + vehicleDetailsRegisteW003.Jyhgbzbh  + "',";//  ,< jyhgbzbh, varchar(20),>
-                sql += " '" + vehicleDetailsRegisteW003.Xzqh  + "',";//  ,< xzqh, varchar(10),>
-                sql += " '" + vehicleDetailsRegisteW003.Zsxzqh  + "',";//  ,< zsxzqh, varchar(10),>
-                sql += " '" + vehicleDetailsRegisteW003.Zzxzqh  + "',";//  ,< zzxzqh, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Hxnbkd + "',";// ,< hxnbkd, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Hxnbgd + "',";//  ,< hxnbgd, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Gbthps + "',";//  ,< gbthps, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zs + "',";//  ,< zs, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zj + "',";//  ,< zj, varchar(5),>
+                sql += " '" + vehicleDetailsRegisteW003.Qlj + "',";//  ,< qlj, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Hlj + "',";//  ,< hlj, varchar(4),>
+                sql += " '" + vehicleDetailsRegisteW003.Ltgg + "',";//  ,< ltgg, varchar(64),>
+                sql += " '" + vehicleDetailsRegisteW003.Lts + "',";//  ,< lts, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzl + "',";//  ,< zzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Zbzl + "',";//  ,< zbzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Hdzzl + "',";//  ,< hdzzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Hdzk + "',";//  ,< hdzk, varchar(3),>
+                sql += " '" + vehicleDetailsRegisteW003.Zqyzl + "',";//  ,< zqyzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Qpzk + "',";// ,< qpzk, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Hpzk + "',";// ,< hpzk, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Hbdbqk + "',";// ,< hbdbqk, varchar(128),>
+                sql += " '" + vehicleDetailsRegisteW003.Ccrq + "',";//  ,< ccrq, varchar(24),>
+                sql += " '" + vehicleDetailsRegisteW003.Clyt + "',";//  ,< clyt, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Ytsx + "',";//  ,< ytsx, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Xszbh + "',";// ,< xszbh, varchar(20),>
+                sql += " '" + vehicleDetailsRegisteW003.Jyhgbzbh + "',";//  ,< jyhgbzbh, varchar(20),>
+                sql += " '" + vehicleDetailsRegisteW003.Xzqh + "',";//  ,< xzqh, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Zsxzqh + "',";//  ,< zsxzqh, varchar(10),>
+                sql += " '" + vehicleDetailsRegisteW003.Zzxzqh + "',";//  ,< zzxzqh, varchar(10),>
                 sql += " '" + "" + "',";//  ,< sgcssbwqk, varchar(4000),>
-                sql += " '" + vehicleDetailsRegisteW003.Sfmj  + "',";//  ,< sfmj, varchar(1),>
+                sql += " '" + vehicleDetailsRegisteW003.Sfmj + "',";//  ,< sfmj, varchar(1),>
                 sql += " '" + "" + "',";//  ,< bmjyy, varchar(4000),>
                 sql += " '" + "" + "',";//  ,< sfxny, varchar(1),>
                 sql += " '" + "" + "',";//  ,< xnyzl, varchar(1),>
-                sql += " '" + vehicleDetailsRegisteW003.Sfazwb  + "',";//  ,< sfazwb, varchar(2),>
-                sql += " '" + vehicleDetailsRegisteW003.Wbzl  + "',";//  ,< wbzl, varchar(8),>
-                sql += " '"+vehicleDetailsRegisteW003.Qxclzhxx +"')";//  ,< qxclzhxx, varchar(4000),>)";
+                sql += " '" + vehicleDetailsRegisteW003.Sfazwb + "',";//  ,< sfazwb, varchar(2),>
+                sql += " '" + vehicleDetailsRegisteW003.Wbzl + "',";//  ,< wbzl, varchar(8),>
+                sql += " '" + vehicleDetailsRegisteW003.Qxclzhxx + "')";//  ,< qxclzhxx, varchar(4000),>)";
                 dbUtility.ExecuteNonQuery(sql, null);
             }
             catch
@@ -2003,5 +2058,550 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return true;
         }
+        /// <summary>
+        /// 保存安检数据库 Baseinfo_Hand
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        public bool SaveBaseinfoHandAj(VehicleDetailsRegisteW003 v, DbUtility dbUtility)
+        {
+            try
+            {
+                string sqlStr = "INSERT INTO [dbo].[BaseInfo_Hand] ";
+                sqlStr += " ([Lsh],[hpzl],[hphm],[QZDZ],[QDFS],[ZXJFS],[DGTZFS],[SYCH],[SFKZ],[XSLC],[Max_SD],[ZJDW],[BSQXS],[ZDFS] ";
+                sqlStr += " ,[WRZY],[QGS],[RyGG],[WXDW],[JGRQ],[Lsdh],[Lxdz],[Aj_Veh_Type],[hpys],[qdzhw],[qdzhsh],[zhzhsh],[zhchzhw] ";
+                sqlStr += " ,[edzhs],[ajywlb],[zjywlb],[hjywlb],[jdchsshlb],[jcxlb],[qzhsh],[zhchzhsh],[wgchx],[chych],[bzhzhw] ";
+                sqlStr += " ,[zhxzhsh],[zjjylb],[yyzhh],[zjlsh],[sfjf],[sfkp],[tb],[sfgp],[dzss],[kqxjzw],[zhchlsh],[hjxm],[sjr],[sjrsfzh] ";
+                sqlStr += " ,[sjrdh],[pqgsh],[JcDate],[JcTime],[Jqfs],[Gyfs],[Pfjd],[Dws]) VALUES( ";
+                sqlStr += " '" + v.Ajlsh + "',";// (< Lsh, varchar(32),>
+                sqlStr += " '" + v.Hpzl + "',";// ,< hpzl, varchar(2),>
+                sqlStr += " '" + v.Hphm + "',";// ,< hphm, varchar(15),>
+                sqlStr += " '" + v.Qzdz + "',";// ,< QZDZ, varchar(3),>
+                sqlStr += " '" + v.Qdfs + "',";// ,< QDFS, varchar(32),>
+                sqlStr += " '" + v.ZXJFS + "',";// ,< ZXJFS, varchar(2),>
+                sqlStr += " '" + v.DGTZFS + "',";// ,< DGTZFS, varchar(2),>
+                sqlStr += " '" + "-" + "',";// ,< SYCH, varchar(2),>
+                sqlStr += " '" + v.SFKZ + "',";// ,< SFKZ, varchar(2),>
+                sqlStr += " '" + v.XSLC + "',";// ,< XSLC, varchar(12),>
+                sqlStr += " '" + v.Max_SD + "',";// ,< Max_SD, varchar(8),>
+                sqlStr += " '" + v.Zjdw + "',";// ,< ZJDW, varchar(16),>
+                sqlStr += " '" + v.BSQXS + "',";// ,< BSQXS, varchar(16),>
+                sqlStr += " '" + v.Zdfs + "',";// ,< ZDFS, varchar(16),>
+                sqlStr += " '" + "-" + "',";// ,< WRZY, varchar(2),>
+                sqlStr += " '" + v.Qgs + "',";// ,< QGS, varchar(8),>
+                sqlStr += " '" + v.Rygg + "',";// ,< RyGG, varchar(32),>
+                sqlStr += " '" + "" + "',";// ,< WXDW, varchar(128),>
+                sqlStr += " '" + "" + "',";// ,< JGRQ, varchar(32),>
+                sqlStr += " '" + v.Lsdh + "',";// ,< Lsdh, varchar(18),>
+                sqlStr += " '" + v.Lxdz + "',";// ,< Lxdz, varchar(200),>
+                sqlStr += " '" + v.Aj_Veh_Type + "',";// ,< Aj_Veh_Type, varchar(8),>
+                sqlStr += " '" + v.Hpys + "',";// ,< hpys, varchar(8),>
+                sqlStr += " '" + v.Qdzhw + "',";// ,< qdzhw, varchar(8),>
+                sqlStr += " '" + v.Qdzhsh + "',";// ,< qdzhsh, int,>
+                sqlStr += " '" + v.Zhzhsh + "',";// ,< zhzhsh, int,>
+                sqlStr += " '" + v.Zhchzhw + "',";// ,< zhchzhw, varchar(8),>
+                sqlStr += " '" + v.Edzhs + "',";// ,< edzhs, varchar(8),>
+                sqlStr += " '" + v.Ajywlb + "',";// ,< ajywlb, varchar(8),>
+                sqlStr += " '" + v.Zjywlb + "',";// ,< zjywlb, varchar(8),>
+                sqlStr += " '" + v.Hjywlb + "',";// ,< hjywlb, varchar(8),>
+                sqlStr += " '" + v.Jdchsshlb + "',";// ,< jdchsshlb, varchar(8),>
+                sqlStr += " '" + v.Jcxlb + "',";// ,< jcxlb, varchar(8),>
+                sqlStr += " '" + v.Qzhsh + "',";// ,< qzhsh, int,>
+                sqlStr += " '" + v.Zhchzhsh + "',";// ,< zhchzhsh, int,>
+                sqlStr += " '" + v.Wgchx + "',";// ,< wgchx, varchar(8),>
+                sqlStr += " '" + v.Chych + "',";// ,< chych, varchar(8),>
+                sqlStr += " '" + v.Bzhzhw + "',";// ,< bzhzhw, varchar(8),>
+                sqlStr += " '" + v.Zhxzhsh + "',";// ,< zhxzhsh, varchar(8),>
+                sqlStr += " '" + v.Zjjylb + "',";// ,< zjjylb, varchar(8),>
+                sqlStr += " '" + v.Yyzhh + "',";// ,< yyzhh, varchar(24),>
+                sqlStr += " '" + v.Zjlsh + "',";// ,< zjlsh, varchar(50),>
+                sqlStr += " '" + "0" + "',";// ,< sfjf, varchar(2),>
+                sqlStr += " '" + "0" + "',";// ,< sfkp, varchar(2),>
+                sqlStr += " '" + "0" + "',";// ,< tb, varchar(2),>
+                sqlStr += " '" + "0" + "',";// ,< sfgp, varchar(2),>
+                sqlStr += " '" + v.Dzss + "',";// ,< dzss, varchar(2),>
+                sqlStr += " '" + v.Kqxjzw + "',";// ,< kqxjzw, varchar(8),>
+                sqlStr += " '" + "" + "',";// ,< zhchlsh, varchar(24),>
+                sqlStr += " '" + "-" + "',";// ,< hjxm, varchar(24),>
+                sqlStr += " '" + v.Sjr + "',";// ,< sjr, varchar(20),>
+                sqlStr += " '" + v.Sjrsfzh + "',";// ,< sjrsfzh, varchar(50),>
+                sqlStr += " '" + v.Sjrdh + "',";// ,< sjrdh, varchar(20),>
+                sqlStr += " '" + v.Pqgsh + "',";// ,< pqgsh, varchar(8),>
+                sqlStr += " '" + v.JcDate + "',";// ,< JcDate, varchar(16),>
+                sqlStr += " '" + v.JcTime + "',";// ,< JcTime, varchar(16),>
+                sqlStr += " '" + v.Jqfs + "',";// ,< Jqfs, varchar(8),>
+                sqlStr += " '" + v.Gyfs + "',";// ,< Gyfs, varchar(8),>
+                sqlStr += " '" + v.Pfjd + "',";// ,< Pfjd, varchar(8),>
+                sqlStr += " '" + v.Dws + "')";// ,< Dws, int,>)";
+                dbUtility.ExecuteNonQuery(sqlStr, null);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// 保存安检数据库 LY_Flow_Info
+        /// </summary>
+        /// <param name="autoInfo"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        private bool SaveFlowInfoAj(VehicleDetailsRegisteW003 autoInfo, DbUtility dbUtility)
+        {
+            string sqlStr = "";
+            try
+            {
+                // '先删除已存在的
+                sqlStr = "delete from [dbo].[LY_Flow_Info] where Lsh='" + autoInfo.Ajlsh + "'";
+                int reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                if (reInt < 0)
+                    return false;
+                // '保存新增的
+                sqlStr = "INSERT INTO [dbo].[LY_Flow_Info]";
+                sqlStr += " ([Lsh],ajywlb,ajjccs,ajjcxm,[Jccs],[AddRq],[JcXm],[JcJg],[Jc_S],[Ry_01],[Ry_02],[Ry_03],[Ry_04]";
+                sqlStr += " ,[Ry_05],[Ry_06],[Ry_07],[GW_01],[GW_02],[GW_03],[GW_04],[GW_05],[GW_06]";
+                sqlStr += " ,[GW_07],[GW_08],[GW_09],[GW_10],[GW_11],[GW_12],[Man_TD_WG],[Man_TD_DP]";
+                sqlStr += " ,[Man_TD_DT],[Man_TD_LS],[SB_TD],wgstatus,dpstatus,dpdtstatus,wkccstatus,lszdstatus,isonline,zzcc,zjlsh,zbzlstatus,lwcxstatus,wyxjcstatus,jyxmstatus,jyxmjg,jczt) VALUES";
+                sqlStr += " ('" + autoInfo.Ajlsh + "',"; // ' (<Lsh, varchar(17),>
+                sqlStr += " '" + autoInfo.Ajywlb + "',"; // '  ,<ajywlb, varchar(8),>
+                sqlStr += " '" + autoInfo.Ajjccs.ToString() + "',"; // '  ,<ajjccs, int,>
+                sqlStr += " '" + autoInfo.Ajjccs.ToString() + "',"; // '  ,<ajjccs, int,>
+                sqlStr += " '" + autoInfo.JcxmAj + "',"; // '  ,<ajjcxm, varchar(128),>
+                sqlStr += " '" + autoInfo.Ajjccs.ToString() + "',"; // '  ,<Jccs, varchar(4),>
+                sqlStr += "  getdate(),"; // ' ,<AddRq, datetime,>
+                sqlStr += " '" + autoInfo.JcxmAj + "',"; // ' ,<JcXm, varchar(128),>
+                string jcjg = "";
+                jcjg = jcjg.PadLeft(autoInfo.JcxmAj.Split(",").Count() - 1, '-');
+                string jc_s = "";
+                jc_s = jc_s.PadLeft(autoInfo.JcxmAj.Split(",").Count() - 1, '0');
+                sqlStr += " '" + jcjg + "',"; // ' ,<JcJg, varchar(128),>
+                sqlStr += " '" + jc_s + "',"; // ' ,<Jc_S, varchar(128),>
+                sqlStr += " '" + autoInfo.Dly + "',"; // ' ,<Ry_01, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_02, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_03, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_04, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_05, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_06, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Ry_07, varchar(12),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_01, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_02, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_03, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_04, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_05, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_06, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_07, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_08, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_09, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_10, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // '  ,<GW_11, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<GW_12, varchar(2),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Man_TD_WG, varchar(8),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Man_TD_DP, varchar(8),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Man_TD_DT, varchar(8),>
+                sqlStr += " '" + "-" + "',"; // ' ,<Man_TD_LS, varchar(8),>
+                sqlStr += " '" + "-" + "',"; // ' ,<SB_TD, varchar(8),>)"
+                if (autoInfo.JcxmAj.IndexOf("F1") >= 0)
+                    sqlStr += " '" + "0" + "',"; // ' , [wgstatus] [varchar](2) NULL,			--外观检测状态
+                else
+                    sqlStr += " '" + "-" + "',";// ' , [wgstatus] [varchar](2) NULL,			--外观检测状态
+                if (autoInfo.JcxmAj.IndexOf("C1") >= 0)
+                    sqlStr += " '" + "0" + "',"; // ' ,[dpstatus] [varchar](2) NULL,			--底盘检测状态
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,[dpstatus] [varchar](2) NULL,			--底盘检测状态
+                if (autoInfo.JcxmAj.IndexOf("DC") >= 0)
+                    sqlStr += " '" + "0" + "',"; // ' ,[dpdtstatus] [varchar](2) NULL,			--底盘动态检测状态
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,[dpdtstatus] [varchar](2) NULL,			--底盘动态检测状态
+                                                // wkccstatus
+                if (autoInfo.JcxmAj.IndexOf("M1") >= 0)
+                    sqlStr += " '" + "0" + "',"; // ' ,[wkccstatus] [varchar](2) NULL,			--外廓尺寸检测状态
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,[wkccstatus] [varchar](2) NULL,			--外廓尺寸检测状态
+                if (autoInfo.JcxmAj.IndexOf("R") >= 0)
+                    sqlStr += " '" + "0" + "',"; // ' ,[lszdstatus] [varchar](2) NULL,			--路试检测状态
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,[lszdstatus] [varchar](2) NULL,			--路试检测状态
+                sqlStr += " '" + "0" + "',"; // ' ,<isonline, varchar(8),>)"
+                if (autoInfo.JcxmAj.IndexOf("ZZ") >= 0)
+                    sqlStr += " '" + "1" + "',"; // ' ,<zzcc, varchar(8),>)"
+                else
+                    sqlStr += " '" + "0" + "',";// ' ,<zzcc, varchar(8),>)"
+                sqlStr += " '" + "-" + "',"; // ' ,<zjlsh, varchar(8),>)"
+                if (autoInfo.JcxmAj.IndexOf("Z1") >= 0)
+                    sqlStr += " '0',"; // ' ,<zbzlstatus, varchar(8),>)"
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,<zbzlstatus, varchar(8),>)"
+                if (autoInfo.JcxmAj.IndexOf("NQ") >= 0)
+                    sqlStr += " '0',"; // ' ,<lwcxstatus, varchar(8),>)"
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,<lwcxstatus, varchar(8),>)"
+                if (autoInfo.JcxmAj.IndexOf("UC") >= 0)
+                    sqlStr += " '0',"; // ' ,<wyxjcstatus, varchar(8),>)"
+                else
+                    sqlStr += " '" + "-" + "',";// ' ,<wyxjcstatus, varchar(8),>)"
+                string jcxmjg = "";
+                for (int i = 0; i <= autoInfo.JcxmAj.Split(",").Count() - 2; i += 1)
+                    jcxmjg += autoInfo.JcxmAj.Split(",")[i] + ":-;";
+                string jcxmzt = "";
+                for (int i = 0; i <= autoInfo.JcxmAj.Split(",").Count() - 2; i += 1)
+                    jcxmzt += autoInfo.JcxmAj.Split(",")[i] + ":0;";
+                sqlStr += " '" + jcxmzt + "',"; // ' ,<jyxmstatus, varchar(8),>)"
+                sqlStr += " '" + jcxmjg + "',"; // ' ,<jyxmjg, varchar(8),>)"
+                sqlStr += " '" + "-" + "')"; // ' ,<jczt, varchar(8),>)"
+                reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                if (reInt != 1)
+                    return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// 保存安检数据库 QcyJcDateFlow
+        /// </summary>
+        /// <param name="autoInfo"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        private bool SaveFlowdataAj(VehicleDetailsRegisteW003 autoInfo, DbUtility dbUtility)
+        {
+            try
+            {
+                string sqlStr;
+                // '先删除对应流水号，当前次数
+                sqlStr = "delete from [dbo].[QcyJcDateFlow] where Lsh='" + autoInfo.Ajlsh + "' and Jccs='" + autoInfo.Ajjccs + "'";
+                int reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                if (reInt < 0)
+                    return false;
+                // '添加一条新的
+                sqlStr = "INSERT INTO [dbo].[QcyJcDateFlow]";
+                sqlStr += " ([Lsh],ajywlb,ajjccs,ajjcxm,[Jccs],[Jcxm],[Jcrq],[JcTime],[JcKsTime],[JcJsTime]";
+                sqlStr += " ,[JcXH],[JcJg],[Ry_01],[Ry_02],[Ry_03],[Ry_04],[Ry_05]";
+                sqlStr += " ,[Ry_06],[Ry_07],zjlsh) VALUES";
+                sqlStr += " ('" + autoInfo.Ajlsh + "',"; // ' (<Lsh, varchar(17),>
+                sqlStr += " '" + autoInfo.Ajywlb + "',"; // '  ,<ajywlb, varchar(8),>
+                sqlStr += " '" + autoInfo.Ajjccs + "',"; // '  ,<ajjccs, int,>
+                sqlStr += " '" + autoInfo.JcxmAj + "',"; // '  ,<ajjcxm, varchar(128),>
+                sqlStr += " '" + autoInfo.Ajjccs + "',"; // ' ,<Jccs, int,>
+                sqlStr += " '" + autoInfo.JcxmAj + "',"; // ' ,<Jcxm, varchar(128),>
+                sqlStr += " '" + DateTime.Now.ToString("yyyy-MM-dd") + "',"; // ' ,<Jcrq, date,>
+                sqlStr += " '" + DateTime.Now.ToString("HH:mm:ss") + "',"; // ' ,<JcTime, time(7),>
+                sqlStr += " '" + DateTime.Now.ToString() + "',"; // ' ,<JcKsTime, datetime,>
+                sqlStr += " '" + "" + "',"; // ' ,<JcJsTime, datetime,>
+                sqlStr += " '" + "" + "',"; // ' ,<JcXH, varchar(4),>
+                sqlStr += " '" + "" + "',"; // ' ,<JcJg, varchar(24),>
+                sqlStr += " '" + autoInfo.Dly + "',"; // ' ,<Ry_01, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_02, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_03, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_04, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_05, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_06, varchar(12),>
+                sqlStr += " '" + "" + "',"; // ' ,<Ry_07, varchar(12),>
+                sqlStr += " '" + "-" + "')"; // ' ,<zjlsh, varchar(12),>
+                reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                if (reInt != 1)
+                    return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// 保存安检数据库 QcyJcDateCover
+        /// </summary>
+        /// <param name="autoInfo"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        private bool SaveCoverdataAj(VehicleDetailsRegisteW003 autoInfo, DbUtility dbUtility)
+        {
+            try
+            {
+                string sqlStr = "";
+                int reInt = -1;
+                // '查询是否存在
+                sqlStr = "select * from [dbo].[QcyJcDateCover] where Lsh ='" + autoInfo.Ajlsh + "'";
+                DataTable reDt = dbUtility.ExecuteDataTable(sqlStr, null);
+                if (reDt.Rows.Count > 0)
+                {
+                    // '存在，更新
+                    sqlStr = "UPDATE [dbo].[QcyJcDateCover] set ";
+                    sqlStr += " jccs='" + autoInfo.Ajjccs + "',"; // ',[Jccs] = <Jccs, int,>
+                    sqlStr += " jcrq='" + DateTime.Now.ToString("yyyy-MM-dd") + "',"; // ',[Jcrq] = <Jcrq, date,>
+                    sqlStr += " JcTime='" + DateTime.Now.ToString("HH:mm:ss") + "',"; // ',[JcTime] = <JcTime, time(7),>
+                    sqlStr += " JcKsTime='" + DateTime.Now.ToString() + "',"; // ',[JcKsTime] = <JcKsTime, datetime,>
+                    sqlStr += " Ry_01='" + autoInfo.Dly + "'"; // ',[Ry_01] = <Ry_01, varchar(12),>
+                    sqlStr += " where lsh='" + autoInfo.Ajlsh + "'"; // ' WHERE <搜索条件,,>"
+                    reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                    if (reInt != 1)
+                        return false;
+                }
+                else
+                {
+                    // '不存在，添加
+                    sqlStr = "INSERT INTO [dbo].[QcyJcDateCover]";
+                    sqlStr += " ([Lsh],ajywlb,ajjccs,ajjcxm,zjywlb,zjjccs,zjjcxm,hjywlb,hjjccs,hjjcxm,[Jccs],[Jcxm],[Jcrq],[JcTime],[JcKsTime],[JcJsTime],[JcXH],[JcJg]";
+                    sqlStr += " ,[Ry_01],[Ry_02],[Ry_03],[Ry_04],[Ry_05],[Ry_06],[Ry_07],zjlsh,printWj) VALUES";
+                    sqlStr += " ('" + autoInfo.Ajlsh + "',"; // '(<Lsh, varchar(17),>                    
+                    sqlStr += " '" + autoInfo.Ajywlb + "',"; // '  ,<ajywlb, varchar(8),>
+                    sqlStr += " '" + autoInfo.Ajjccs + "',"; // '  ,<ajjccs, int,>
+                    sqlStr += " '" + autoInfo.JcxmAj + "',"; // '  ,<ajjcxm, varchar(128),>                    
+                    sqlStr += " '" + autoInfo.Ajjccs + "',"; // ' ,<Jccs, int,>
+                    sqlStr += " '" + autoInfo.JcxmAj + "',"; // ',<Jcxm, varchar(128),>
+                    sqlStr += " '" + DateTime.Now.ToString("yyyy-MM-dd") + "',"; // ',<Jcrq, date,>
+                    sqlStr += " '" + DateTime.Now.ToString("HH:mm:ss") + "',"; // ',<JcTime, time(7),>
+                    sqlStr += " '" + DateTime.Now.ToString() + "',"; // ',<JcKsTime, datetime,>
+                    sqlStr += " '" + "" + "',"; // ',<JcJsTime, datetime,>
+                    sqlStr += " '" + "" + "',"; // ',<JcXH, varchar(4),>
+                    sqlStr += " '" + "" + "',"; // ',<JcJg, varchar(24),>
+                    sqlStr += " '" + autoInfo.Dly + "',"; // ',<Ry_01, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_02, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_03, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_04, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_05, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_06, varchar(12),>
+                    sqlStr += " '" + "" + "',"; // ',<Ry_07, varchar(12),>)"
+                    sqlStr += " '" + "-" + "',"; // ',<zjlsh, varchar(12),>)"
+                    if (autoInfo.JcxmAj.IndexOf("F1") >= 0)
+                        sqlStr += " '0')";
+                    else
+                        sqlStr += " '1')";
+                    reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
+                    if (reInt != 1)
+                        return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// 保存环保数据库 Baseinfo_net
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
+        public bool SaveBaseinfoNetHj(VehicleDetailsRegisteW003 v, DbUtility dbUtility)
+        {
+            try
+            {
+                string CLLXEP = "";
+                if (Convert.ToDouble(v.Zzl) >= 3500)
+                {
+                    if (Convert.ToDouble(v.Zzl) <= 2500 && Convert.ToInt32(v.Hdzk) <= 6)
+                    {
+                        if (v.Cllx.IndexOf("H") >= 0)
+                        {
+                            CLLXEP = "MN2";//                  二类车
+                        }
+                        else
+                        {
+                            CLLXEP = "M11";
+                        }
+                    }
+                    else
+                    {
+                        CLLXEP = "MN2";
+                    }
+                }
+                else
+                {
+                    CLLXEP = "MN3";
+                }
+                string SqlStr;
+                SqlStr = "Delete From BaseInfo_Net where lsh='" + v.Hjlsh + "' and hpzl='" + v.Hpzl + "' and hphm='" + v.Hphm + "'";
+                dbUtility.ExecuteNonQuery(SqlStr, null);
+                SqlStr = "";
+                SqlStr = "insert into  BaseInfo_Net ";
+                SqlStr = SqlStr + "values (";
+                SqlStr = SqlStr + "'" + v.Hjlsh + "',"; // Lsh	varchar(17), 	---	机动车序号	char	14
+                SqlStr = SqlStr + "'" + v.Hpzl + "',"; // hpzl	varchar(2),	--号牌种类	char	2
+                SqlStr = SqlStr + "'" + v.Hphm + "',"; // hphm	varchar(15),	--号牌号码	varchar2	15
+                SqlStr = SqlStr + "'" + v.Clpp1 + "',"; // clpp1	varchar(32),	--中文品牌	varchar2	32
+                SqlStr = SqlStr + "'" + v.Clxh + "',"; // clxh	varchar(32),	---	车辆型号	varchar2	32
+                SqlStr = SqlStr + "'" + v.Clpp2 + "',"; // clpp2	varchar(32),	---英文品牌	varchar2	32
+                SqlStr = SqlStr + "'" + v.Gcjk + "',"; // gcjk	varchar(1),	---国产/进口	char	1
+                SqlStr = SqlStr + "'" + v.Hpys + "',"; // zzg	varchar(3),	---	制造国	char	3   ----作为号牌颜色
+                SqlStr = SqlStr + "'" + v.Zzcmc + "',"; // zzcmc	varchar(64),	--制造厂名称	varchar2	64
+                SqlStr = SqlStr + "'" + v.Clsbdh + "',"; // clsbdh	varchar(25),	--车辆识别代号	varchar2	25
+                SqlStr = SqlStr + "'" + v.Fdjh + "',"; // fdjh	varchar(30),	--发动机号	varchar2	30
+                SqlStr = SqlStr + "'" + v.Cllx + "',"; // cllx	varchar(3),	---车辆类型	char	3
+                SqlStr = SqlStr + "'" + v.Csys + "',"; // csys	varchar(5),	---车身颜色	varchar2	5
+                SqlStr = SqlStr + "'" + v.Syxz + "',"; // syxz	varchar(1),	---使用性质	char	1
+                SqlStr = SqlStr + "'" + "-" + "',"; // sfzmhm	varchar(18),	--身份证明号码	varchar2	18
+                SqlStr = SqlStr + "'" + "-" + "',"; // sfzmmc	varchar(1),	--身份证明名称	char	1
+                SqlStr = SqlStr + "'" + v.Syr + "',"; // syr	varchar(128),	---机动车所有人	varchar2	128
+                SqlStr = SqlStr + "'" + v.Ccdjrq + "',"; // ccdjrq	varchar(24),	--初次登记日期	date	7
+                SqlStr = SqlStr + "'" + v.Djrq + "',"; // djrq	varchar(24),	--最近定检日期	date	7
+                SqlStr = SqlStr + "'" + v.Yxqz + "',"; // yxqz	varchar(24),	--检验有效期止	date	7
+                SqlStr = SqlStr + "'" + v.Qzbfqz + "',"; // qzbfqz	varchar(24),	---强制报废期止	date	7
+                SqlStr = SqlStr + "'" + "-" + "',"; // fzjg	varchar(10),	----	发证机关	varchar2	10
+                SqlStr = SqlStr + "'" + "-" + "',"; // glbm	varchar(12),	---	管理部门	varchar2	12
+                SqlStr = SqlStr + "'" + v.Bxzzrq + "',"; // bxzzrq	varchar(24),	---保险终止日期	date	7
+                SqlStr = SqlStr + "'" + v.Zt + "',"; // zt	varchar(6),	---	机动车状态	varchar2	6
+                SqlStr = SqlStr + "'" + v.Dybj + "',"; // dybj	varchar(1),	--抵押标记0-未抵押，1-已抵押	char	1
+                SqlStr = SqlStr + "'" + v.Fdjxh + "',"; // fdjxh	varchar(64),	---发动机型号	varchar2	64
+                SqlStr = SqlStr + "'" + v.Rlzl + "',"; // rlzl	varchar(3),	---燃料种类	varchar2	3
+                SqlStr = SqlStr + "'" + v.Pl + "',"; // pl	varchar(6),	---排量	number	6
+                SqlStr = SqlStr + "'" + v.Gl + "',"; // gl	varchar(8),	--功率	number	5,1
+                SqlStr = SqlStr + "'" + v.Zxxs + "',"; // zxxs	varchar(1),	---转向形式	char	1
+                SqlStr = SqlStr + "'" + v.Cwkc + "',"; // cwkc	varchar(5),	---车外廓长	number	5
+                SqlStr = SqlStr + "'" + v.Cwkk + "',"; // cwkk	varchar(4),	---车外廓宽	number	4
+                SqlStr = SqlStr + "'" + v.Cwkg + "',"; // cwkg	varchar(4),	---车外廓高	number	4
+                SqlStr = SqlStr + "'" + v.Hxnbcd + "',"; // hxnbcd	varchar(5),	--货箱内部长度	number	5
+                SqlStr = SqlStr + "'" + v.Hxnbkd + "',"; // hxnbkd	varchar(4),	---货箱内部宽度	number	4
+                SqlStr = SqlStr + "'" + v.Hxnbgd + "',"; // hxnbgd	varchar(4),	---货箱内部高度	number	4
+                SqlStr = SqlStr + "'" + v.Gbthps + "',"; // gbthps	varchar(3),	---钢板弹簧片数	number	3
+                SqlStr = SqlStr + "'" + v.Zs + "',"; // zs	varchar(3),	---轴数	number	1
+                SqlStr = SqlStr + "'" + v.Zj + "',"; // zj	varchar(5),	---轴距	number	5
+                SqlStr = SqlStr + "'" + v.Qlj + "',"; // qlj	varchar(4),	---前轮距	number	4
+                SqlStr = SqlStr + "'" + v.Hlj + "',"; // hlj	varchar(4),	---后轮距	number	4
+                SqlStr = SqlStr + "'" + v.Ltgg + "',"; // ltgg	varchar(64),	---轮胎规格	varchar2	64
+                SqlStr = SqlStr + "'" + v.Lts + "',"; // lts	varchar(2),	---轮胎数	number	2
+                SqlStr = SqlStr + "'" + v.Zzl + "',"; // zzl	varchar(8),	---总质量	number	8
+                SqlStr = SqlStr + "'" + v.Zbzl + "',"; // zbzl	varchar(8),	---整备质量	number	8
+                SqlStr = SqlStr + "'" + v.Hdzzl + "',"; // hdzzl	varchar(8),	---核定载质量	number	8
+                SqlStr = SqlStr + "'" + v.Hdzk + "',"; // hdzk	varchar(3),	---核定载客	number	3
+                SqlStr = SqlStr + "'0',"; // DPF         zqyzl	varchar(8),	---准牵引总质量	number	8
+                SqlStr = SqlStr + "'" + v.DPF + "',"; // DPF型号     qpzk	varchar(1),	---驾驶室前排载客人数	number	1
+                SqlStr = SqlStr + "'" + v.SCR + "',"; // SCR	        varchar(2),	---驾驶室后排载客人数	number	2
+                SqlStr = SqlStr + "'" + v.Pfjd + "',"; // SCR型号   	varchar(128),	---环保达标情况	varchar2	128
+                SqlStr = SqlStr + "'" + v.Ccrq + "',"; // ccrq	varchar(24),	---出厂日期	date	7
+                SqlStr = SqlStr + "'" + v.Clyt + "',"; // clyt	varchar(2),	---车辆用途	char	2
+                SqlStr = SqlStr + "'" + v.Ytsx + "',"; // ytsx	varchar(1),	---用途属性	char	1
+                SqlStr = SqlStr + "'" + v.Xszbh + "',"; // xszbh	varchar(20),	---行驶证证芯编号	varchar2	20
+                SqlStr = SqlStr + "'" + "-" + "',"; // jyhgbzbh	varchar(20),	---检验合格标志	varchar2	20
+                SqlStr = SqlStr + "'" + v.Gyfs + "',"; // 供油方式 'xzqh	varchar(10),	---管理辖区	varchar2	10
+                SqlStr = SqlStr + "'" + v.Pqgsh + "',"; // zsxzqh	varchar(10),	---住所地址行政区划	varchar2	10
+                SqlStr = SqlStr + "'" + v.Xzqh + "',"; // zzxzqh	varchar(10),	---联系地址行政区划	varchar2	10
+                SqlStr = SqlStr + "'" + v.Qzdz + "',"; // QZDZ(varchar(3), --前照灯制)
+                SqlStr = SqlStr + "'" + v.Qdfs.Substring(1, 1) + "',"; // QDFS(varchar(32), ---驱动方式)
+                SqlStr = SqlStr + "'" + v.ZXJFS + "',"; // ZXJFS(varchar(2), ---转向角方式)
+                SqlStr = SqlStr + "'" + "1" + "',"; // DGTZFS(varchar(2), --前照灯调整)
+                SqlStr = SqlStr + "'" + CLLXEP + "',"; // CLSSLB(varchar(32), --车辆所属类别) 车辆类型(EP)  M11-第一类轻型汽车,MN2 -第二类轻型汽车,MN3 -重型汽车
+                SqlStr = SqlStr + "'" + v.Hclfs + "',"; // SYCH	varchar(2),	--是否三元催化 (0 无三元催化。1带有三元催化)
+                SqlStr = SqlStr + "'" + "0" + "',"; // SFKZ  0空载、1满载
+                SqlStr = SqlStr + "'" + v.XSLC + "',"; // XSLC(varchar(12), ---行驶里程数)
+                if (Convert.ToDouble(v.Max_SD) <= 70)
+                    SqlStr = SqlStr + "'" + "0" + "',"; // Max_SD(varchar(8), ---设计最大行驶速度)
+                else if (Convert.ToDouble(v.Max_SD) < 100)
+                    SqlStr = SqlStr + "'" + "1" + "',"; // Max_SD(varchar(8), ---设计最大行驶速度)
+                else
+                    SqlStr = SqlStr + "'" + "2" + "',";// Max_SD(varchar(8), ---设计最大行驶速度)
+                SqlStr = SqlStr + "'" + v.Dws + "',"; // & "'" & GetDm_FromStr(ComboBox22.Text, "28") & "'," ' ZJDW(varchar(16), ---直接档档位)
+                SqlStr = SqlStr + "'" + v.BSQXS + "',"; // BSQXS(varchar(16), ---变速器形式)
+                SqlStr = SqlStr + "'" + v.Zdfs + "',"; // ZDFS	varchar(16),	---制动方式  0-气压制动，1-液压制动，2-气推油制动	 
+                SqlStr = SqlStr + "'" + v.Jqfs + "',"; // WRZY	varchar(2),	---涡轮增压（0 自然吸气式，1 涡然增压式)	
+                SqlStr = SqlStr + "'" + v.Qgs + "',";  // 气缸数 YHXZ(varchar(8),  --油耗限值)
+                SqlStr = SqlStr + "'" + v.Rygg + "',"; // 燃油规格  YYZHDM(varchar(32), --营运证号)  & "#"
+                SqlStr = SqlStr + "'" + v.Gcjk + "',"; // WXDW(varchar(128), ---维修单位)  作为国产进口
+                SqlStr = SqlStr + "'" + v.Hjywlb + "',"; // JGRQ(varchar(16), ---峻工日期) 作为业务类别
+                SqlStr = SqlStr + "'" + "-" + "',"; // Bz01   		    varchar(128),---， 		   ---备注
+                SqlStr = SqlStr + "'" + v.Edzhs + "',"; // Bz02   		    varchar(128),---， 		   ---备注 作为额定转速
+                SqlStr = SqlStr + "'" + v.Lsdh + "')"; // Bz03 varchar(128) - --备注  作为国产进口
+                dbUtility.ExecuteNonQuery(SqlStr, null);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool SaveJcFlowHj(VehicleDetailsRegisteW003 v, DbUtility dbUtility)
+        {
+            string SqlStr;
+            string JcxmStr;            // '
+            string JcGGStr;
+            string JcZTStr;
+            string Vams_Pf_Cx = "E";
+            string TwoWq_Pf_CxFl = "G";
+            try
+            {
+                SqlStr = "insert into  LY_Flow_Info (Lsh,hpzl,hphm,Cpcx,Fdjh,VIN,Cllx,SYR,JcDate,Jctime,Jccs,JcXH,Cyc,QZDZ,QDFS,ZXJFS,DGTZFS,";
+                SqlStr = SqlStr + "ZZL,ZbZl,HDZK,ZS,CCRQ,DjRq,GBCX,DgSfTz,JcXm,JcJg,Jc_S,Dly,InBz_01,GW_01,GW_02,GW_03,GW_04,GW_10,GW_05,GW_06,GW_07,Jclb,InBz_02,InBz_03)";
+                SqlStr = SqlStr + "values (";
+                // [ID] [int] IDENTITY(1,1) NOT NULL,			--数据编号，自增量
+                SqlStr = SqlStr + "'" + v.Hjlsh + "',"; // Lsh(varchar(17), ---机动车序号)
+                SqlStr = SqlStr + "'" + v.Hpzl + "',";  // hpzl(varchar(2), --号牌种类)
+                SqlStr = SqlStr + "'" + v.Hphm + "',";  // hphm(varchar(15), --号牌号码)
+                SqlStr = SqlStr + "'" + v.Clpp1 + "',";  // Cpcx(varchar(64), --厂牌车型)
+                SqlStr = SqlStr + "'" + v.Fdjh + "',";  // Fdjh(varchar(48), --发动机号)
+                SqlStr = SqlStr + "'" + v.Clsbdh + "',"; // VIN(varchar(18), --VIN号)
+                SqlStr = SqlStr + "'" + v.Cllx + "',"; // Cllx(varchar(3), --车辆类型)
+                SqlStr = SqlStr + "'" + v.Syr + "',"; // SYR(varchar(128), --车辆所有人)
+                SqlStr = SqlStr + "'" + DateTime.Now.Date.ToString("yyyy-MM-dd") + "',"; // JcDate(varchar(16), ---检测日期(初次检测时间))
+                SqlStr = SqlStr + "'" + DateTime.Now.ToString("HH:mm:ss") + "',";  // Jctime(varchar(16), ---检测时间)              
+                SqlStr = SqlStr + "'" + v.Hjjccs + "',";// Jccs(varchar(4), --检测次数)
+                SqlStr = SqlStr + "'" + v.Jcxh + "',"; // JcXH(varchar(4), --检测线号)
+                SqlStr = SqlStr + "'" + v.Chych + "',"; // Cyc		varchar(4),	--乘用车(0 非乘用车 1 乘用车)
+                SqlStr = SqlStr + "'" + v.Qzdz + "',"; // QZDZ(varchar(3), --前照灯制(1 - 四灯远近光, 2 - 四灯远光, 3 - 二灯远近光, 4 - 二灯近光, 5 - 一灯远光))
+                SqlStr = SqlStr + "'" + v.Qdfs.Substring(1, 1) + "',"; // QDFS(varchar(32), ---驱动方式)
+                SqlStr = SqlStr + "'" + v.ZXJFS + "',"; // ZXJFS(varchar(2), ---转向角方式(0 - 独立悬架, 1 - 非独立悬架))
+                SqlStr = SqlStr + "'0',"; // DGTZFS(varchar(2), --前照灯调整(0 - 不能单独调整, 1 - 单独调整))
+                SqlStr = SqlStr + "'" + v.Zzl + "',"; // ZZL(varchar(12), ---总质量)
+                SqlStr = SqlStr + "'" + v.Zbzl + "',"; // ZbZl(varchar(12), ---整备质量)
+                SqlStr = SqlStr + "'" + v.Hdzk + "',"; // HDZK(varchar(8), --核定载客)
+                if (v.Hjywlb == "2")
+                    SqlStr = SqlStr + "'02',"; // '         ZS(varchar(8), ---轴数(  改成拍照车型种类 ))
+                else
+                    SqlStr = SqlStr + "'01',";// '         ZS(varchar(8), ---轴数(  改成拍照车型种类 ))
+                SqlStr = SqlStr + "'" + v.Ccrq + "',"; // '         CCRQ(varchar(8), --出厂日期)
+                SqlStr = SqlStr + "'" + v.Ccdjrq + "',"; // '         DjRq(Varchar(8), --初次登记日期)
+                SqlStr = SqlStr + "'" + TwoWq_Pf_CxFl + "',"; // 'GBCX(varchar(4), ---国标车型   双怠速车型)
+                SqlStr = SqlStr + "'" + Vams_Pf_Cx + "',"; // 'DgSfTz(varchar(8), --灯光是否在线调整) ---作为VMAS 的车型
+                SqlStr = SqlStr + "'" + v.JcxmHJ + "',"; // JcXm	varchar(24),	 --检测项目（检测项目组合：111111111111111111111)	
+                                                         // ---外观、动态、底盘、车速、一轴、二轴、三轴、四轴、五轴、驻车、左灯、右灯、侧滑
+                                                         // ----加载1，加载2，加载3，加载4，加载5，整备质量，外廓尺寸,行车路试，坡道路试，车速路试 
+                SqlStr = SqlStr + "'" + "" + "',"; // JcJg  varchar(24),     ---检测结果 (结果的组(合 0000000000000000000 )  （1 代表合格，2代表不合格。0 代表没有检测）
+                SqlStr = SqlStr + "'" + "" + "',"; // Jc_S	varchar(24),   ---检测状态 (检测状态组合000000000000000000) （0代表示检。1代表正在检测。2代表检测完毕，9代检测失败）
+                SqlStr = SqlStr + "'" + v.Dly + "',"; // Dly(varchar(16),  ---登录人员)
+                SqlStr = SqlStr + "'" + v.Hjdlsj + "',"; // InBz_01(varchar(128), ---备用信息字)
+                if (v.JcxmHJ.IndexOf("F1") >= 0)
+                    SqlStr = SqlStr + "'" + "0" + "',"; // GW_01 (状态1) 外观检测标志
+                else
+                    SqlStr = SqlStr + "'" + "2" + "',";// GW_01 (状态1) 外观检测标志
+                if (v.JcxmHJ.IndexOf("PF") >= 0)
+                    SqlStr = SqlStr + "'" + "0" + "',"; // GW_02(状态2)  线内检测标志
+                else
+                    SqlStr = SqlStr + "'" + "2" + "',";// GW_02(状态2)  线内检测标志
+                if (v.JcxmHJ.IndexOf("C1") >= 0)
+                    SqlStr = SqlStr + "'" + "0" + "',"; // GW_03(状态3)  底盘检测标志
+                else
+                    SqlStr = SqlStr + "'" + "2" + "',";// 
+                if (v.JcxmHJ.IndexOf("OBD") >= 0)
+                {
+                    SqlStr = SqlStr + "'" + "0" + "',"; // GW_04(状态3)  OBD
+                    SqlStr = SqlStr + "'" + "0" + "',"; // GW_10(状态3)  OBD
+                }
+                else
+                {
+                    SqlStr = SqlStr + "'" + "3" + "',"; // 
+                    SqlStr = SqlStr + "'" + "1" + "',"; // GW_10(状态3)  OBD
+                }
+                SqlStr = SqlStr + "'" + v.Dly + "',"; // GW_05  暂存新系统标志
+                if (v.Hjywlb == "2")
+                    SqlStr = SqlStr + "'新车',"; // '         GW_06(varchar(8), ---轴数(  改成拍照车型种类 ))
+                else
+                    SqlStr = SqlStr + "'在用',";// '         GW_06(varchar(8), ---轴数(  改成拍照车型种类 ))
+                SqlStr = SqlStr + "'1',";
+                SqlStr = SqlStr + "'" + v.Hjywlb + "',"; // 'jclbStr
+                SqlStr = SqlStr + "'" + "" + "',";
+                SqlStr = SqlStr + "'" + v.Hjdlsj + "')";
+                dbUtility.ExecuteNonQuery(SqlStr, null);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
     }
 }

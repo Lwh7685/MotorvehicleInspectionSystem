@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -448,7 +449,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         ///制动力源，制动方式
         ///</summary>
         [JsonProperty("Zdly"), XmlElement("zzly")]
-        public string ZDFS { get; set; }
+        public string Zdfs { get; set; }
         /// <summary>
         ///气缸数
         ///</summary>

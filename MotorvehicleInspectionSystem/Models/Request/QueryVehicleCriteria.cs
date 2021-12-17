@@ -58,5 +58,9 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 环检流水号
         /// </summary>
         public string Hjlsh { get; set; }
+        /// <summary>
+        ///审核业务  0=同检查  1=安检  2=环检
+        /// </summary>
+        public string Shyw { get; set; }
     }
 }

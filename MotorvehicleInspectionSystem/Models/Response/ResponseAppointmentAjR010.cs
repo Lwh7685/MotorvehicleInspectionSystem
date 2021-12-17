@@ -14,6 +14,9 @@ namespace MotorvehicleInspectionSystem.Models.Response
             public ResponseAppointmentAjR010[] data;
             public string message;
         }
+        /// <summary>
+        /// 安检预约情况  LYYDJKR010
+        /// </summary>
         public class  ResponseAppointmentAjR010
         {
             /// <summary>

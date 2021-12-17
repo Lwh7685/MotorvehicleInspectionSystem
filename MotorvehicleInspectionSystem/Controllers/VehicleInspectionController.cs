@@ -148,6 +148,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         ServerTimeR011[] dateTimes = QC.LYYDJKR011(responseData);
                         responseData.Body = dateTimes;
                         break;
+                    case "LYYDJKR013":
+                        ModerationQueueR013[] moderationQueueR013s = QC.LYYDJKR013(requestData ,responseData );
+                        responseData.Body = moderationQueueR013s;
+                        break;
                     case "LYYDJKR015":
                         SystemParameter[] systemParameters = QC.LYYDJKR015(responseData);
                         responseData.Body = systemParameters;

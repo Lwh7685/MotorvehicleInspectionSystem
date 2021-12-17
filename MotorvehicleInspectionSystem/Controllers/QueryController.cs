@@ -248,7 +248,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 string sql = "select * from JsCsCode ";
 
                 sql += " where 1=1  ";
-                if (queryDataDR003.Fl != "" && queryDataDR003.Fl != null)
+                if (!string.IsNullOrEmpty(queryDataDR003.Fl))
                 {
                     sql += " and fl = '" + queryDataDR003.Fl + "'";
                 }
@@ -753,9 +753,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                 DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                 string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum, *,(select Pic_TypeStr from [dbo].[Pic_Sj_Bt_Pic_Type] where Pic_Num=t1.Zpzl ) zpzlmc ";
                 sql += " from UpLoad_Pic t1,(select zpzl, max(Jycs) jycs from UpLoad_Pic ";
-                sql += " where lsh = '" + queryUploadPicR007.Lsh + "' ";
+                sql += " where lsh = '" + queryUploadPicR007.Ajlsh + "' ";
                 sql += " group by zpzl) t2 ";
-                sql += " where t1.lsh = '" + queryUploadPicR007.Lsh + "' ";
+                sql += " where t1.lsh = '" + queryUploadPicR007.Ajlsh + "' ";
                 sql += " and t1.Zpzl = t2.Zpzl and t1.Jycs = t2.jycs ";
                 uploadPics = dbAj.QueryForList<UploadPic>(sql, null);
                 responseData.Code = "1";
@@ -860,15 +860,38 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<AppointmentEntityAj.ResponseAppointmentAjR010> responseAppointmentAjR010s = new List<AppointmentEntityAj.ResponseAppointmentAjR010>();
             try
             {
-                SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
-                Dictionary<string, string> @params = new Dictionary<string, string>();
-                @params.Add("jyjgbh", systemParameterAj.Jyjgbh);
-                string methordName = "/check-station/api/actived-appointment";
-                string retrunStr = AppointmentAj(systemParameterAj.AppointmentURL + methordName, @params);
-                JsonSerializerSettings jsonSetting = new JsonSerializerSettings();
-                jsonSetting.NullValueHandling = NullValueHandling.Ignore;
-                AppointmentEntityAj.ACTIVEDRETURN aCTIVEDRETURN = JsonConvert.DeserializeObject<AppointmentEntityAj.ACTIVEDRETURN>(retrunStr, jsonSetting);
-                responseAppointmentAjR010s = aCTIVEDRETURN.data.ToList<AppointmentEntityAj.ResponseAppointmentAjR010>();
+
+                AppointmentEntityAj.ResponseAppointmentAjR010 responseAppointment = new AppointmentEntityAj.ResponseAppointmentAjR010();
+                List<AppointmentEntityAj.ResponseAppointmentAjR010> responseAppointments = new List<AppointmentEntityAj.ResponseAppointmentAjR010>();
+                responseAppointment.Clsbdh = "LS1D221B2H0601122";
+                responseAppointment.Hphm = "鄂HF39D2";
+                responseAppointment.Hpzl = "02";
+                responseAppointment.Id = 0;
+                responseAppointment.Sjr = "张三";
+                responseAppointment.Sjrsfzh = "123123123123";
+                responseAppointment.Sjrdh = "1561156231561123561";
+                responseAppointments.Add(responseAppointment);
+                responseAppointment = new AppointmentEntityAj.ResponseAppointmentAjR010();
+                responseAppointment.Clsbdh = "LA9940C38K0AZY386";
+                responseAppointment.Hphm = "鄂HB552";
+                responseAppointment.Hpzl = "15";
+                responseAppointment.Id = 1;
+                responseAppointment.Sjr = "李四";
+                responseAppointment.Sjrsfzh = "312312325918524358";
+                responseAppointment.Sjrdh = "12359421";
+                responseAppointments.Add(responseAppointment);
+
+
+                //SystemParameterAj systemParameterAj = SystemParameterAj.m_instance;
+                //Dictionary<string, string> @params = new Dictionary<string, string>();
+                //@params.Add("jyjgbh", systemParameterAj.Jyjgbh);
+                //string methordName = "/check-station/api/actived-appointment";
+                //string retrunStr = AppointmentAj(systemParameterAj.AppointmentURL + methordName, @params);
+                //JsonSerializerSettings jsonSetting = new JsonSerializerSettings();
+                //jsonSetting.NullValueHandling = NullValueHandling.Ignore;
+                //AppointmentEntityAj.ACTIVEDRETURN aCTIVEDRETURN = JsonConvert.DeserializeObject<AppointmentEntityAj.ACTIVEDRETURN>(retrunStr, jsonSetting);
+                //responseAppointmentAjR010s = aCTIVEDRETURN.data.ToList<AppointmentEntityAj.ResponseAppointmentAjR010>();
+                responseAppointmentAjR010s = responseAppointments;
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -975,6 +998,56 @@ namespace MotorvehicleInspectionSystem.Controllers
             return dateTimes.ToArray();
 
         }
+        /// <summary>
+        /// 查询待审核队列
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public ModerationQueueR013[] LYYDJKR013(RequestData requestData, ResponseData responseData)
+        {
+            List<ModerationQueueR013> moderationQueueR013s = new List<ModerationQueueR013>();
+            try
+            {
+                QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                //安检数据库
+                if(queryCriteria.Shyw == "1")
+                {
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select t1.lsh as ajlsh,'-' as hjlsh,t1.hpzl,t1.hphm,t2.clsbdh ,t2.cllx,t3.Jccs as ajjccs,'' as hjjccs ,t3.ajywlb as ajywlb,'-' as hjywlb,t1.sqr as ajsqr ";
+                    sql += " ,'-' as hjsqr, t1.sqsj as ajsqsj,'-' as hjsqsj,convert(varchar(10), t3.Jcrq) + ' ' + convert(varchar(10), t3.JcTime) as ajjcsj,'-' as hjjcsj ";
+                    sql += " from T_AuditStatus t1,BaseInfo_Net t2, QcyJcDateCover t3 ";
+                    sql += " where t1.Lsh = t2.Lsh and t1.lsh = t3.lsh ";
+                    if (!string.IsNullOrEmpty(queryCriteria.Hphm))
+                    {
+                        sql += " and t1.hphm like '%" + queryCriteria.Hphm + "%'";
+                    }
+                    else
+                    {
+                        sql += " and Convert(date,sqsj)='" + DateTime.Now.ToString("yyyy-MM-dd") + "' ";
+                    }
+                    sql += " and t1.shzt='1'";
+                    moderationQueueR013s = dbAj.QueryForList<ModerationQueueR013>(sql, null);
+                }
+               
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+                responseData.RowNum = moderationQueueR013s.Count;
+            }
+            catch (ArgumentNullException ex)
+            {
+                responseData.Code = "1";
+                responseData.Message = ex.Message;
+                responseData.RowNum = moderationQueueR013s.Count;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return moderationQueueR013s.ToArray();
+        }
+
         /// <summary>
         /// 查询数据库系统参数
         /// </summary>
