@@ -15,7 +15,7 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// <summary>
         /// 检测项目
         /// </summary>
-        public string Jcxm { get; set; }
+        public string Jyxm { get; set; }
         /// <summary>
         /// 要求时长 s
         /// </summary>

@@ -294,6 +294,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         SaveResult[] saveResults012 = WC.LYYDJKW012(requestData, responseData, zdbs);
                         responseData.Body = saveResults012;
                         break;
+                    case "LYYDJKW015":
+                        SaveResult[] saveResults015= WC.LYYDJKW015(requestData,responseData );
+                        responseData.Body = saveResults015;
+                        break;
                     default:
                         responseData.Code = "-1";
                         responseData.Message = "上传正确的接口编号（jkId）";

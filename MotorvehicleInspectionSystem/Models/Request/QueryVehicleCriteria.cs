@@ -62,5 +62,8 @@ namespace MotorvehicleInspectionSystem.Models.Request
         ///审核业务  0=同检查  1=安检  2=环检
         /// </summary>
         public string Shyw { get; set; }
+
+        public int Ajjccs { get; set; }
+        public int Hjjccs { get; set; }
     }
 }

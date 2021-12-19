@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace MotorvehicleInspectionSystem.Models.Response
 {
     /// <summary>
-    /// 申请审核队列
+    /// 收费开票队列
     /// </summary>
-    public class ModerationQueueR013
+    public class ChargeListR014
     {
         /// <summary>
         /// 安检流水号
@@ -19,21 +19,13 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// </summary>
         public string Hjlsh { get; set; }
         /// <summary>
-        /// 号牌种类
+        /// 安检业务类别
         /// </summary>
-        public string Hpzl { get; set; }
+        public string Ajywlb { get; set; }
         /// <summary>
-        /// 号牌号码
+        /// 环检业务类别
         /// </summary>
-        public string Hphm { get; set; }
-        /// <summary>
-        /// 车辆识别代号
-        /// </summary>
-        public string Clsbdh { get; set; }
-        /// <summary>
-        /// 车辆类型
-        /// </summary>
-        public string Cllx { get; set; }
+        public string Hjywlb { get; set; }
         /// <summary>
         /// 安检检测次数
         /// </summary>
@@ -43,36 +35,44 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// </summary>
         public int Hjjccs { get; set; }
         /// <summary>
-        /// 安检业务类别
+        /// 环检检验方式
         /// </summary>
-        public string Ajywlb { get; set; }
+        public string Hjjyfs { get; set; }
         /// <summary>
-        /// 环检业务类别
+        /// 号牌种类
         /// </summary>
-        public string Hjywlb { get; set; }
+        public string Hpzl { get; set; }
         /// <summary>
-        /// 安检申请人
+        /// 号牌号码
         /// </summary>
-        public string Ajsqr { get; set; }
+        public string Hphm { get; set; }
         /// <summary>
-        /// 环检申请人
+        /// 车辆类型
         /// </summary>
-        public string Hjsqr { get; set; }
+        public string Cllx { get; set; }
         /// <summary>
-        /// 安检申请时间
+        /// 总质量
         /// </summary>
-        public string Ajsqsj { get; set; }
+        public string Zzl { get; set; }
         /// <summary>
-        /// 环检申请时间
+        /// 整备质量
         /// </summary>
-        public string Hjsqsj { get; set; }
+        public string Zbzl { get; set; }
         /// <summary>
-        /// 安检检测时间
+        /// 燃料种类
         /// </summary>
-        public string Ajjcsj { get; set; }
+        public string Rlzl { get; set; }
         /// <summary>
-        /// 环检检测时间
+        /// 使用性质
         /// </summary>
-        public string Hjjcsj { get; set; }        
+        public string Syxz { get; set; }
+        /// <summary>
+        /// 是否收费 0=未收费  1=已收费
+        /// </summary>
+        public string Sfsf { get; set; }
+        /// <summary>
+        /// 是否开票 0=未开票  1=已开票
+        /// </summary>
+        public string Sfkp { get; set; }
     }
 }

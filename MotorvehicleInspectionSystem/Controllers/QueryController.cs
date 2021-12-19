@@ -86,7 +86,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     sql += " ,(case t1.isonline when '0' then '未上线' when '1' then '线上检验' when '2' then '线上结束' end ) as Jyzt  ";
                     sql += " ,(select mc from jscscode where dm=t1.ajywlb and fl='08') as ajywlbCc ,t1.ajywlb as ajywlb ";
                     sql += " ,'-' as hjywlbCc ,'-' as hjywlb,'-' as hjlsh ";
-                    sql += " ,'安检' as Ywlb ,'0' as hjjccs ";
+                    sql += " ,'安检' as Ywlb ,'0' as hjjccs,t2.sfjf as sfsf,t2.sfkp as sfkp ";
                     sql += " from LY_Flow_Info t1,BaseInfo_Hand t2 ";
                     sql += " where t1.Lsh = t2.Lsh  and (t2.tb <>'1' or t2.tb is null)";
                     if (queryVehQueueR002.Hphm == "")
@@ -107,7 +107,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         sql += " ,convert(varchar(10), convert(datetime, t1.Jcdate ), 120) +' '+ t1.Jctime  as Djrq  ";
                         sql += " ,'' as Jyzt ";
                         sql += " ,(select mc from jscscode where dm = t1.Jclb and fl = '08') as hjywlbCc,t1.Jclb as hjywlb ";
-                        sql += " ,'环检' as ywlb ";
+                        sql += " ,'环检' as ywlb ,'1' as sfsf,'1' as sfkp";
                         sql += " from LY_Flow_Info t1,BaseInfo_Net t2 ";
                         sql += " where t1.Lsh = t2.Lsh  and (t1.GW_01 ='0' or t1.GW_03 ='0')";
                         sql += " and convert(varchar(10),convert(datetime, t1.JcDate),120) = convert(varchar(10), GETDATE(), 120) ";
@@ -130,7 +130,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     sql += " ,'' as Jyzt ";
                     sql += " ,'-' as ajywlbCc ,'-' as ajywlb ,'-' as ajlsh,'0' as ajjccs ";
                     sql += " ,(select mc from jscscode where dm = t1.Jclb and fl = '08') as hjywlbCc,t1.Jclb as hjywlb ";
-                    sql += " ,'环检' as ywlb ";
+                    sql += " ,'环检' as ywlb ,'1' as sfsf,'1' as sfkp";
                     sql += " from LY_Flow_Info t1,BaseInfo_Net t2 ";
                     sql += " where t1.Lsh = t2.Lsh  and (t1.GW_01 ='0' or t1.GW_03 ='0')";
                     sql += " and convert(varchar(10),convert(datetime, t1.JcDate),120) = convert(varchar(10), GETDATE(), 120) ";
@@ -276,8 +276,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return dataDictionaries.ToArray();
         }
-
-
         /// <summary>
         /// 查询所有商品条目，供收费和开票使用
         /// </summary>
@@ -575,6 +573,43 @@ namespace MotorvehicleInspectionSystem.Controllers
                             }
                         }
                     }
+                    if (dataTable.Rows[0]["JcXm"].ToString().IndexOf("B") >= 0 || dataTable.Rows[0]["JcXm"].ToString().IndexOf("H") >= 0 || dataTable.Rows[0]["JcXm"].ToString().IndexOf("A1") >= 0 || (dataTable.Rows[0]["JcXm"].ToString().IndexOf("Z1") >= 0 && dataTable.Rows[0]["zbzlstatus"].ToString() == "0"))
+                    {
+                        id++;
+                        string jczt = "未检";
+                        if (dataTable.Rows[0]["isonline"].ToString() == "0")
+                        {
+                            jczt = "未检";
+                        }
+                        if (dataTable.Rows[0]["isonline"].ToString() == "1")
+                        {
+                            jczt = "线上";
+                        }
+                        if (dataTable.Rows[0]["isonline"].ToString() == "2")
+                        {
+                            jczt = "完成";
+                        }
+                        InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
+                        {
+                            Lsh = queryByLSH.Ajlsh,
+                            Ajlsh = queryByLSH.Ajlsh,
+                            Ajjccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
+                            Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
+                            Ajywlb = ajywlb,
+                            Jczt = jczt,
+                            Jcxm = "YQ",
+                            ID = id,
+                            Hjlsh = "-",
+                            Hjjccs = 0,
+                            Hjywlb = "-",
+                            Jcxh = dataTable.Rows[0]["SB_TD"].ToString(),
+                            Jckssj = Convert.ToDateTime(string.IsNullOrEmpty(dataTable.Rows[0]["sxsj"].ToString()) ? DateTime.Now.ToString() : dataTable.Rows[0]["sxsj"].ToString()),
+                            Jcjssj = Convert.ToDateTime(string.IsNullOrEmpty(dataTable.Rows[0]["onlinetime"].ToString()) ? DateTime.Now.ToString() : dataTable.Rows[0]["onlinetime"].ToString()),
+                            Jcry_01 = dataTable.Rows[0]["Ry_05"].ToString(),
+                            Xmmc = "安检上线"
+                        };
+                        inspectionItemsR006s.Add(inspectionItemsR006);
+                    }
                 }
 
                 if (VehicleInspectionController.SyHj == "1")
@@ -750,14 +785,59 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 QueryVehicleCriteria queryUploadPicR007 = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum, *,(select Pic_TypeStr from [dbo].[Pic_Sj_Bt_Pic_Type] where Pic_Num=t1.Zpzl ) zpzlmc ";
-                sql += " from UpLoad_Pic t1,(select zpzl, max(Jycs) jycs from UpLoad_Pic ";
-                sql += " where lsh = '" + queryUploadPicR007.Ajlsh + "' ";
-                sql += " group by zpzl) t2 ";
-                sql += " where t1.lsh = '" + queryUploadPicR007.Ajlsh + "' ";
-                sql += " and t1.Zpzl = t2.Zpzl and t1.Jycs = t2.jycs ";
-                uploadPics = dbAj.QueryForList<UploadPic>(sql, null);
+                //查安检
+                if (queryUploadPicR007.Ajywlb != "-")
+                {
+                    if (VehicleInspectionController.SyAj != "1")
+                    {
+                        responseData.Code = "-9";
+                        responseData.Message = "检测站不包含安检业务";
+                        return uploadPics.ToArray();
+                    }
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum, *,(select Pic_TypeStr from [dbo].[Pic_Sj_Bt_Pic_Type] where Pic_Num=t1.Zpzl ) zpzlmc ";
+                    sql += " from UpLoad_Pic t1,(select zpzl, max(Jycs) jycs from UpLoad_Pic ";
+                    sql += " where lsh = '" + queryUploadPicR007.Ajlsh + "' ";
+                    sql += " group by zpzl) t2 ";
+                    sql += " where t1.lsh = '" + queryUploadPicR007.Ajlsh + "' ";
+                    sql += " and t1.Zpzl = t2.Zpzl and t1.Jycs = t2.jycs ";
+                    try
+                    {
+                        uploadPics = dbAj.QueryForList<UploadPic>(sql, null);
+                    }
+                    catch (ArgumentNullException)
+                    {
+
+                    }
+
+                }
+                //查环保
+                if (queryUploadPicR007.Hjywlb != "-")
+                {
+                    if (VehicleInspectionController.SyHj != "1")
+                    {
+                        responseData.Code = "-10";
+                        responseData.Message = "检测站不包含环检业务";
+                        return uploadPics.ToArray();
+                    }
+                    List<UploadPic> uploadPics2 = new List<UploadPic>();
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,jylsh as lsh,BzO1 as bz01,BzO2 as bz02,BzO3 as bz03, *,(select Pic_TypeStr from [dbo].[Pic_Sj_Bt_Pic_Type] where Pic_Num=t1.Zpzl ) zpzlmc ";
+                    sql += " from UpLoad_Wg_Pic t1,(select zpzl, max(Jycs) jycs from UpLoad_Wg_Pic ";
+                    sql += " where jylsh = '" + queryUploadPicR007.Hjlsh + "' ";
+                    sql += " group by zpzl) t2 ";
+                    sql += " where t1.jylsh = '" + queryUploadPicR007.Hjlsh + "' ";
+                    sql += " and t1.Zpzl = t2.Zpzl and t1.Jycs = t2.jycs ";
+                    try
+                    {
+                        uploadPics2 = dbHj.QueryForList<UploadPic>(sql, null);
+                    }
+                    catch (ArgumentNullException)
+                    {
+
+                    }
+                    uploadPics = uploadPics.Concat(uploadPics2).ToList<UploadPic>();
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -1007,14 +1087,22 @@ namespace MotorvehicleInspectionSystem.Controllers
         public ModerationQueueR013[] LYYDJKR013(RequestData requestData, ResponseData responseData)
         {
             List<ModerationQueueR013> moderationQueueR013s = new List<ModerationQueueR013>();
+            DataTable dataTableAj = new DataTable();
+            DataTable dataTableHj = new DataTable();
             try
             {
                 QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                //安检数据库
-                if(queryCriteria.Shyw == "1")
+                //安检审核查询
+                if (queryCriteria.Shyw == "1" || queryCriteria.Shyw == "0")
                 {
+                    if (VehicleInspectionController.SyAj != "1")
+                    {
+                        responseData.Code = "-9";
+                        responseData.Message = "检测站不包含安检业务";
+                        return moderationQueueR013s.ToArray();
+                    }
                     DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                    string sql = "select t1.lsh as ajlsh,'-' as hjlsh,t1.hpzl,t1.hphm,t2.clsbdh ,t2.cllx,t3.Jccs as ajjccs,'' as hjjccs ,t3.ajywlb as ajywlb,'-' as hjywlb,t1.sqr as ajsqr ";
+                    string sql = "select t1.lsh as ajlsh,'-' as hjlsh,t1.hpzl,t1.hphm,t2.clsbdh ,t2.cllx,t3.Jccs as ajjccs,'0' as hjjccs ,t3.ajywlb as ajywlb,'-' as hjywlb,t1.sqr as ajsqr ";
                     sql += " ,'-' as hjsqr, t1.sqsj as ajsqsj,'-' as hjsqsj,convert(varchar(10), t3.Jcrq) + ' ' + convert(varchar(10), t3.JcTime) as ajjcsj,'-' as hjjcsj ";
                     sql += " from T_AuditStatus t1,BaseInfo_Net t2, QcyJcDateCover t3 ";
                     sql += " where t1.Lsh = t2.Lsh and t1.lsh = t3.lsh ";
@@ -1027,9 +1115,44 @@ namespace MotorvehicleInspectionSystem.Controllers
                         sql += " and Convert(date,sqsj)='" + DateTime.Now.ToString("yyyy-MM-dd") + "' ";
                     }
                     sql += " and t1.shzt='1'";
-                    moderationQueueR013s = dbAj.QueryForList<ModerationQueueR013>(sql, null);
+                    //moderationQueueR013s = dbAj.QueryForList<ModerationQueueR013>(sql, null);
+                    dataTableAj = dbAj.ExecuteDataTable(sql, null);
                 }
-               
+                if (queryCriteria.Shyw == "0" || queryCriteria.Shyw == "2")
+                {
+                    if (VehicleInspectionController.SyHj != "1")
+                    {
+                        responseData.Code = "-10";
+                        responseData.Message = "检测站不包含环检业务";
+                        return moderationQueueR013s.ToArray();
+                    }
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = "select t1.lsh as hjlsh,'-' as ajlsh,t1.hpzl,t1.hphm,t2.clsbdh ,t2.cllx,'0' as ajjccs,t3.Jccs as hjjccs ";
+                    sql += " ,'-' as ajywlb,t3.Jclb as hjywlb,'-' as ajsqr,t1.sqr as hjsqr, '-' as ajsqsj,t1.sqsj as hjsqsj ";
+                    sql += " ,convert(varchar(10), t3.JcDate) + ' ' + convert(varchar(10), t3.JcTime) as hjjcsj ,'-' as ajjcsj ";
+                    sql += " from T_AuditStatus t1,BaseInfo_Net t2, LY_Flow_Info  t3 ";
+                    sql += " where t1.Lsh = t2.Lsh and t1.lsh = t3.lsh ";
+                    if (!string.IsNullOrEmpty(queryCriteria.Hphm))
+                    {
+                        sql += " and t1.hphm like '%" + queryCriteria.Hphm + "%'";
+                    }
+                    else
+                    {
+                        sql += " and Convert(date,sqsj)='" + DateTime.Now.ToString("yyyy-MM-dd") + "' ";
+                    }
+                    sql += " and t1.shzt='1'";
+                    dataTableHj = dbHj.ExecuteDataTable(sql, null);
+                }
+                //合并两个表
+                if (dataTableAj.Rows.Count == 0)
+                {
+                    moderationQueueR013s = EntityReader.GetEntities<ModerationQueueR013>(dataTableHj);
+                }
+                else
+                {
+                    DataTable dtAll = UniteDataTableLYYDJKR013(dataTableAj, dataTableHj, "dtAll");
+                    moderationQueueR013s = EntityReader.GetEntities<ModerationQueueR013>(dtAll);
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
                 responseData.RowNum = moderationQueueR013s.Count;
@@ -1047,7 +1170,64 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return moderationQueueR013s.ToArray();
         }
+        /// <summary>
+        /// 合并安检环检表
+        /// </summary>
+        /// <param name="Aj"></param>
+        /// <param name="Hj"></param>
+        /// <param name="DTName"></param>
+        /// <returns></returns>
+        private DataTable UniteDataTableLYYDJKR013(DataTable Aj, DataTable Hj, string DTName)
+        {
+            DataTable dt3 = Aj.Clone();
+            object[] obj = new object[dt3.Columns.Count];
 
+            for (int i = 0; i < Aj.Rows.Count; i++)
+            {
+                Aj.Rows[i].ItemArray.CopyTo(obj, 0);
+                dt3.Rows.Add(obj);
+            }
+            for (int i = 0; i < Hj.Rows.Count; i++)
+            {
+                var rows = dt3.AsEnumerable()
+                            .Where(p => p.Field<string>("hphm") == Hj.Rows[i]["hphm"].ToString() && p.Field<string>("hpzl") == Hj.Rows[i]["hpzl"].ToString());
+
+                if (rows.Count() > 0)
+                {
+                    foreach (DataRow dr in rows)
+                    {
+                        dr["hjlsh"] = Hj.Rows[i]["hjlsh"].ToString();
+                        dr["hjywlb"] = Hj.Rows[i]["hjywlb"].ToString();
+                        dr["hjjccs"] = Hj.Rows[i]["hjjccs"].ToString();
+                        dr["Hjsqr"] = Hj.Rows[i]["Hjsqr"].ToString();
+                        dr["Hjsqsj"] = Hj.Rows[i]["Hjsqsj"].ToString();
+                        dr["Hjjcsj"] = Hj.Rows[i]["Hjjcsj"].ToString();
+                    }
+                }
+                else
+                {
+                    DataRow dr = dt3.NewRow();
+                    dr["ajlsh"] = "-";
+                    dr["hjlsh"] = Hj.Rows[i]["hjlsh"].ToString();
+                    dr["hphm"] = Hj.Rows[i]["hphm"].ToString();
+                    dr["hpzl"] = Hj.Rows[i]["hpzl"].ToString();
+                    dr["Clsbdh"] = Hj.Rows[i]["Clsbdh"].ToString();
+                    dr["Cllx"] = Hj.Rows[i]["Cllx"].ToString();
+                    dr["ajjccs"] = 0;
+                    dr["hjjccs"] = Hj.Rows[i]["hjjccs"].ToString();
+                    dr["ajywlb"] = "-";
+                    dr["hjywlb"] = Hj.Rows[i]["hjywlb"].ToString();
+                    dr["Ajsqr"] = "-";
+                    dr["Hjsqr"] = Hj.Rows[i]["Hjsqr"].ToString();
+                    dr["Hjsqsj"] = Hj.Rows[i]["Hjsqsj"].ToString();
+                    dr["Hjjcsj"] = Hj.Rows[i]["Hjjcsj"].ToString();
+
+                    dt3.Rows.Add(dr);
+                }
+            }
+            dt3.TableName = DTName; //设置DT的名字
+            return dt3;
+        }
         /// <summary>
         /// 查询数据库系统参数
         /// </summary>
@@ -1298,9 +1478,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             responseData.Message = "SUCCESS";
             return artificialProjectR016s.ToArray();
         }
-
-
-
         /// <summary>
         /// 查询机动车人工检验项目需要拍摄的照片
         /// </summary>
@@ -1481,7 +1658,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return inspectionPhotoR017s.ToArray();
         }
-
         /// <summary>
         /// 查询所有人工检验项目
         /// </summary>
@@ -1648,22 +1824,22 @@ namespace MotorvehicleInspectionSystem.Controllers
                 string sql = "";
                 if (queryCriteria.Jyxm != "" && !(queryCriteria.Jyxm is null))
                 {
-                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jcxm,Yqsc from ( " +
-                   " select 'F1' as Jcxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'C1' as Jcxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'DC' as Jcxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'B' as Jcxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'H' as Jcxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
-                   " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' and jcxm='" + queryCriteria.Jyxm + "'";
+                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc from ( " +
+                   " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
+                   " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' and jyxm='" + queryCriteria.Jyxm + "'";
                 }
                 else
                 {
-                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jcxm,Yqsc  from ( " +
-                   " select 'F1' as Jcxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'C1' as Jcxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'DC' as Jcxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'B' as Jcxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'H' as Jcxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
+                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc  from ( " +
+                   " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                   " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
                    " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' ";
                 }
 
@@ -1674,8 +1850,8 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             catch (ArgumentNullException)
             {
-                responseData.Code = "1";
-                responseData.Message = "SUCCESS";
+                responseData.Code = "-100";
+                responseData.Message = "没有查询到符合条件的数据信息！";
             }
             catch (NullReferenceException nre)
             {
@@ -1877,7 +2053,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return artificialProjectR016s.ToArray();
         }
-
         //public string QueryTime()
         //{
         //    BasicHttpBinding binding2 = new BasicHttpBinding();
@@ -1932,7 +2107,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return appVersions.ToArray();
         }
-
         /// <summary>
         /// 机动车信息联网查询(安检平台)
         /// </summary>
@@ -2028,6 +2202,8 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return administrativeRegionR023s.ToArray();
         }
+
+
 
     }
 }

@@ -75,6 +75,14 @@ namespace MotorvehicleInspectionSystem.Models
         /// 环检检测次数
         /// </summary>
         public string Hjjccs { get; set; }
+        /// <summary>
+        /// 是否收费 0=未收费  1=已收费
+        /// </summary>
+        public string Sfsf { get; set; }
+        /// <summary>
+        /// 是否开票 0=未开票  1=已开票
+        /// </summary>
+        public string Sfkp { get; set; }
 
     }
 }

@@ -124,40 +124,40 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
 
                     //保存 baseinfo_net
-                    if(SaveBaseinfoNetAj (vehicleDetailsRegisteW003,dbAj))
+                    if (SaveBaseinfoNetAj(vehicleDetailsRegisteW003, dbAj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveBaseinfoNetAj保存失败";
                         return saveResults.ToArray();
                     }
                     //保存  baseinfo_hand
-                    if(SaveBaseinfoHandAj (vehicleDetailsRegisteW003 ,dbAj))
+                    if (SaveBaseinfoHandAj(vehicleDetailsRegisteW003, dbAj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveBaseinfoHandAj保存失败";
                         return saveResults.ToArray();
                     }
                     //保存
-                    if (SaveFlowInfoAj (vehicleDetailsRegisteW003, dbAj))
+                    if (SaveFlowInfoAj(vehicleDetailsRegisteW003, dbAj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveFlowInfoAj保存失败";
                         return saveResults.ToArray();
                     }
-                    if (SaveFlowdataAj (vehicleDetailsRegisteW003, dbAj))
+                    if (SaveFlowdataAj(vehicleDetailsRegisteW003, dbAj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveFlowdataAj保存失败";
                         return saveResults.ToArray();
                     }
-                    if (SaveCoverdataAj (vehicleDetailsRegisteW003, dbAj))
+                    if (SaveCoverdataAj(vehicleDetailsRegisteW003, dbAj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveCoverdataAj保存失败";
                         return saveResults.ToArray();
                     }
                 }
-                if(vehicleDetailsRegisteW003 .Hjywlb != "-")
+                if (vehicleDetailsRegisteW003.Hjywlb != "-")
                 {
                     if (VehicleInspectionController.SyHj != "1")
                     {
@@ -166,13 +166,13 @@ namespace MotorvehicleInspectionSystem.Controllers
                         return saveResults.ToArray();
                     }
                     DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
-                    if (SaveBaseinfoNetHj (vehicleDetailsRegisteW003, dbHj))
+                    if (SaveBaseinfoNetHj(vehicleDetailsRegisteW003, dbHj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveBaseinfoNetHj保存失败";
                         return saveResults.ToArray();
                     }
-                    if (SaveJcFlowHj (vehicleDetailsRegisteW003, dbHj))
+                    if (SaveJcFlowHj(vehicleDetailsRegisteW003, dbHj))
                     {
                         responseData.Code = "-1";
                         responseData.Message = "SaveJcFlowHj保存失败";
@@ -1689,6 +1689,68 @@ namespace MotorvehicleInspectionSystem.Controllers
             return saveResults.ToArray();
         }
         /// <summary>
+        /// 机动车上线
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public SaveResult[] LYYDJKW015(RequestData requestData, ResponseData responseData)
+        {
+            List<SaveResult> saveResults = new List<SaveResult>();
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                StartDetectionW015 startDetectionW015 = JSONHelper.ConvertObject<StartDetectionW015>(requestData.Body[0]);
+                if(string.IsNullOrEmpty (startDetectionW015.Ajlsh))
+                {
+                    responseData.Code = "-8";
+                    responseData.Message = "参数不能为空:Ajlsh";
+                    return saveResults.ToArray();
+                }
+                if (string.IsNullOrEmpty(startDetectionW015.Ycy ))
+                {
+                    responseData.Code = "-8";
+                    responseData.Message = "参数不能为空:Ycy";
+                    return saveResults.ToArray();
+                }
+                if (string.IsNullOrEmpty(startDetectionW015.Jcxh ))
+                {
+                    responseData.Code = "-8";
+                    responseData.Message = "参数不能为空:Jcxh";
+                    return saveResults.ToArray();
+                }
+                string sql = "update LY_Flow_Info set isonline ='1',Ry_05='"+startDetectionW015.Ycy +"',SB_TD ='"+startDetectionW015.Jcxh +"' where Lsh ='"+startDetectionW015.Ajlsh +"'";
+                int reI = dbAj.ExecuteNonQuery(sql, null);
+                if (reI == 1)
+                {
+                    responseData.Code = "1";
+                    responseData.Message = "SUCCESS";
+                }
+                else
+                {
+                    responseData.Code = "-1";
+                    responseData.Message = "上线失败：" + reI ;
+                }
+                
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return saveResults.ToArray();
+        }
+        /// <summary>
         /// 写检验项目过程
         /// </summary>
         /// <param name="czgc">操作过程 1=开始  2=上传数据  3=结束</param>
@@ -2513,7 +2575,12 @@ namespace MotorvehicleInspectionSystem.Controllers
                 return false;
             }
         }
-
+        /// <summary>
+        /// 保存环检数据库 LY_Flow_Info
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="dbUtility"></param>
+        /// <returns></returns>
         private bool SaveJcFlowHj(VehicleDetailsRegisteW003 v, DbUtility dbUtility)
         {
             string SqlStr;
