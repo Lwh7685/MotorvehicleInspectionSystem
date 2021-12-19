@@ -188,6 +188,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         AdministrativeRegionR023[] administrativeRegionR023s = QC.LYYDJKR023(responseData);
                         responseData.Body = administrativeRegionR023s;
                         break;
+                    case "LYYDJKR024":
+                        InspectionProgressR024[] inspectionProgressR024s = QC.LYYDJKR024(requestData, responseData);
+                        responseData.Body = inspectionProgressR024s;
+                        break;
                     default:
                         responseData.Code = "-7";
                         responseData.Message = "上传正确的接口编号（jkId）";

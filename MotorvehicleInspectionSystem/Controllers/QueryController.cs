@@ -2202,8 +2202,94 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return administrativeRegionR023s.ToArray();
         }
-
-
+        /// <summary>
+        /// 查询机动车线上检验进度
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public InspectionProgressR024 [] LYYDJKR024(RequestData requestData ,ResponseData responseData)
+        {
+            List<InspectionProgressR024> inspectionProgressR024s = new List<InspectionProgressR024>();
+            InspectionProgressR024 inspectionProgressR024 = new InspectionProgressR024();
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                QueryVehicleCriteria vehicleCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                if(string.IsNullOrEmpty (vehicleCriteria.Ajlsh))
+                {
+                    responseData.Code = "-8";
+                    responseData.Message = "参数不能为空:Ajlsh";
+                    return inspectionProgressR024s.ToArray();
+                }
+                string sql = "select * from LY_Flow_Info where lsh='" + vehicleCriteria.Ajlsh + "'";
+                DataTable dtLy = dbAj.ExecuteDataTable(sql, null);
+                if (dtLy.Rows.Count <= 0)
+                {
+                    responseData.Code = "-3";
+                    responseData.Message = "不存在对应流水号的检测车辆信息:"+vehicleCriteria.Ajlsh ;
+                    return inspectionProgressR024s.ToArray();
+                }
+                //检测线号
+                string jcxh = dtLy.Rows[0]["SB_TD"].ToString();
+                //线号不为空
+                if(string.IsNullOrEmpty (jcxh ) || jcxh == "-")
+                {
+                    responseData.Code = "-1";
+                    responseData.Message = "机动车还没有上线:" + vehicleCriteria.Ajlsh;
+                    return inspectionProgressR024s.ToArray();
+                }
+                //查询工位数目
+                sql = "select count(*) from [dbo].[tb_workspaceinformation] where jcxh='"+jcxh +"'";
+                int gws =Convert.ToInt32 ( dbAj.ExecuteScalar(sql, null));
+                if (gws <= 0)
+                {
+                    responseData.Code = "-1";
+                    responseData.Message = "检测线没有工位设置，线号："+gws;
+                    return inspectionProgressR024s.ToArray();
+                }
+                //设置工位
+                List<StationStatus> stationStatuses = new List<StationStatus>();
+                for(int i=1; i<=gws; i++)
+                {
+                    StationStatus stationStatus = new StationStatus();
+                    switch (i)
+                    {
+                        case 1:
+                            stationStatus.Gwmc = "一工位";
+                            stationStatus.Gwzt = dtLy.Rows[0]["GW_01"].ToString ();
+                            break;
+                        case 2:
+                            stationStatus.Gwmc = "二工位";
+                            stationStatus.Gwzt = dtLy.Rows[0]["GW_02"].ToString();
+                            break;
+                        case 3:
+                            stationStatus.Gwmc = "三工位";
+                            stationStatus.Gwzt = dtLy.Rows[0]["GW_03"].ToString();
+                            break;
+                    }
+                    stationStatuses.Add(stationStatus);
+                }
+                inspectionProgressR024.Jcgw = stationStatuses.ToArray();
+                inspectionProgressR024s.Add(inspectionProgressR024 );
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return inspectionProgressR024s.ToArray();
+        }
 
     }
 }
