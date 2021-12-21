@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.ChargePayment;
+using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
@@ -222,6 +223,53 @@ namespace MotorvehicleInspectionSystem.Controllers
                 }
                 //保存订单
                 if (!chargePayment.SaveOrder(dbAj))
+                {
+                    responseData.Code = "-99";
+                    responseData.Message = "SaveOrder()";
+                    return saveResults.ToArray();
+                }
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return saveResults.ToArray();
+        }
+        /// <summary>
+        /// 保存开票信息
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public SaveResult[] LYYDJKW005(RequestData requestData, ResponseData responseData,string ip)
+        {
+            List<SaveResult> saveResults = new List<SaveResult>();
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                Invoice invoice  = JSONHelper.ConvertObject<Invoice>(requestData.Body[0]);
+                //保存明细
+                if (!invoice.SaveInvoiceDetails (dbAj))
+                {
+                    responseData.Code = "-99";
+                    responseData.Message = "SaveDetails()";
+                    return saveResults.ToArray();
+                }
+                //保存订单
+                if (!invoice.SaveInvoiceOrder (dbAj,ip))
                 {
                     responseData.Code = "-99";
                     responseData.Message = "SaveOrder()";

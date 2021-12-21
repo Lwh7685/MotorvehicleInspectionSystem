@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
@@ -2337,6 +2338,38 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return inspectionProgressR024s.ToArray();
         }
-
+        /// <summary>
+        /// 查询开票参数
+        /// </summary>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public InvoiceParameters[] LYYDJKR025 (ResponseData responseData)
+        {
+            List<InvoiceParameters> invoiceParameters = new List<InvoiceParameters>();
+            try
+            {
+                DbUtility dnAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                string sql = "select Cs_01 as Skdwsbh,Cs_02 as Shr,Cs_03 as Skdwmc,Cs_04 as Bmdm,Cs_05 as Spbm,Cs_08 as Dh,Cs_09 as Dz,Cs_10 as Khh,Cs_12 as Fpjksfsbm from FP_SysCs";
+                invoiceParameters = dnAj.QueryForList<InvoiceParameters>(sql, null);
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "-1";
+                responseData.Message = "没有查到参数！";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return invoiceParameters.ToArray();
+        }
     }
 }

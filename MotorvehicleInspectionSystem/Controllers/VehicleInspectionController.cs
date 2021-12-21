@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
@@ -150,7 +151,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = dateTimes;
                         break;
                     case "LYYDJKR013":
-                        ModerationQueueR013[] moderationQueueR013s = QC.LYYDJKR013(requestData ,responseData );
+                        ModerationQueueR013[] moderationQueueR013s = QC.LYYDJKR013(requestData, responseData);
                         responseData.Body = moderationQueueR013s;
                         break;
                     case "LYYDJKR014":
@@ -181,11 +182,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = artificialProjectR016s2;
                         break;
                     case "LYYDJKR021":
-                        AppVersion[] appVersions = QC.LYYDJKR021(responseData );
+                        AppVersion[] appVersions = QC.LYYDJKR021(responseData);
                         responseData.Body = appVersions;
                         break;
                     case "LYYDJKR022":
-                        VehicleDetails[] vehicleDetails1 = QC.LYYDJKR022(requestData,responseData);
+                        VehicleDetails[] vehicleDetails1 = QC.LYYDJKR022(requestData, responseData);
                         responseData.Body = vehicleDetails1;
                         break;
                     case "LYYDJKR023":
@@ -195,6 +196,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                     case "LYYDJKR024":
                         InspectionProgressR024[] inspectionProgressR024s = QC.LYYDJKR024(requestData, responseData);
                         responseData.Body = inspectionProgressR024s;
+                        break;
+                    case "LYYDJKR025":
+                        InvoiceParameters[] invoiceParameters = QC.LYYDJKR025(responseData);
+                        responseData.Body = invoiceParameters;
                         break;
                     default:
                         responseData.Code = "-7";
@@ -274,6 +279,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         SaveResult[] saveResults004 = WC.LYYDJKW004(requestData, responseData);
                         responseData.Body = saveResults004;
                         break;
+                    case "LYYDJKW005":
+                        SaveResult[] saveResult005 = WC.LYYDJKW005(requestData, responseData, zdbs);
+                        responseData.Body = saveResult005;
+                        break;
                     //保存签名
                     case "LYYDJKW006":
                         SaveResult[] saveResults006 = WC.LYYDJKW006(requestData, responseData);
@@ -307,7 +316,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = saveResults012;
                         break;
                     case "LYYDJKW015":
-                        SaveResult[] saveResults015= WC.LYYDJKW015(requestData,responseData );
+                        SaveResult[] saveResults015 = WC.LYYDJKW015(requestData, responseData);
                         responseData.Body = saveResults015;
                         break;
                     default:
