@@ -589,6 +589,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             jczt = "完成";
                         }
+                        if (dataTable.Rows[0]["isonline"].ToString() == "3")
+                        {
+                            jczt = "结束";
+                        }
                         InspectionItemsR006 inspectionItemsR006 = new InspectionItemsR006
                         {
                             Lsh = queryByLSH.Ajlsh,
@@ -597,7 +601,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             Jccs = Convert.ToInt32(dataTable.Rows[0]["jccs"].ToString()),
                             Ajywlb = ajywlb,
                             Jczt = jczt,
-                            Jcxm = "YQ",
+                            Jcxm = "YQ",//仪器设备
                             ID = id,
                             Hjlsh = "-",
                             Hjjccs = 0,
@@ -1229,6 +1233,45 @@ namespace MotorvehicleInspectionSystem.Controllers
             return dt3;
         }
         /// <summary>
+        /// 查询收费情况
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        public void LYYDJKR014(RequestData requestData , ResponseData responseData)
+        {
+            try
+            {
+                string sql = "";
+                QueryVehicleCriteria vehicleCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                string sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionResults] where bizseq ='" + vehicleCriteria.Oid + "' and trxstatus ='0000' ";
+                int countR1 =Convert.ToInt32 ( db.ExecuteScalar(sqlStr, null));
+                sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionReturn] where orderid ='" + vehicleCriteria.Oid + "' and trxstatus ='0000'";
+                int countR2 = Convert.ToInt32(db.ExecuteScalar(sqlStr, null));                
+                if(countR1 >0 | countR2 > 0)
+                {
+                    responseData.Code = "1";
+                    responseData.Message = "SUCCESS";
+                }
+                else
+                {
+                    responseData.Code = "0";
+                    responseData.Message = "waiting...";
+                }               
+            }
+            catch (ArgumentNullException ex)
+            {
+                responseData.Code = "-99";
+                responseData.Message = ex.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+        }
+
+        /// <summary>
         /// 查询数据库系统参数
         /// </summary>
         /// <param name="responseData"></param>
@@ -1243,7 +1286,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 if (VehicleInspectionController.SyAj == "1")
                 {
                     DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                    sql = "select top 1 Jyjgbh,Jcsjyxq,Jcsjbcnx,Web_Pass,Dw_Xkzh,Dw_Dhhm,Dw_mc,Dw_dz,SFF,KPF,LshSzm,'AJ' as sjlb from SystermCs_All ";
+                    sql = "select top 1 Jyjgbh,Jcsjyxq,Jcsjbcnx,Web_Pass,Dw_Xkzh,Dw_Dhhm,Dw_mc,Dw_dz,SFF,KPF,LshSzm,'AJ' as sjlb ,t2.appid,t2.md5key,t2.c ,t2.c1  from SystermCs_All,tb_ChargeSystemCS t2";
                     systemParameter = db.QueryForObject<SystemParameter>(sql, null);
                     systemParametes.Add(systemParameter)
         ;
@@ -1251,7 +1294,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 if (VehicleInspectionController.SyHj == "1")
                 {
                     DbUtility db = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
-                    sql = "select top 1 bz1 as Jyjgbh,JcDateYouXiao as Jcsjyxq,'' as Jcsjbcnx,bz2 as Web_Pass,Dw_Xkzh,Dw_Dhhm,Report_Head as Dw_mc,''as Dw_dz,''as SFF,'' as KPF,'' as LshSzm ,'HJ' as sjlb from SystermCs_All ";
+                    sql = "select top 1 bz1 as Jyjgbh,JcDateYouXiao as Jcsjyxq,'' as Jcsjbcnx,bz2 as Web_Pass,Dw_Xkzh,Dw_Dhhm,Report_Head as Dw_mc,''as Dw_dz,''as SFF,'' as KPF,'' as LshSzm ,'HJ' as sjlb ,t2.appid,t2.md5key,t2.c ,t2.c1  from SystermCs_All,tb_ChargeSystemCS t2 ";
                     systemParameter = db.QueryForObject<SystemParameter>(sql, null);
                     systemParametes.Add(systemParameter);
                 }
@@ -2208,7 +2251,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="requestData"></param>
         /// <param name="responseData"></param>
         /// <returns></returns>
-        public InspectionProgressR024 [] LYYDJKR024(RequestData requestData ,ResponseData responseData)
+        public InspectionProgressR024[] LYYDJKR024(RequestData requestData, ResponseData responseData)
         {
             List<InspectionProgressR024> inspectionProgressR024s = new List<InspectionProgressR024>();
             InspectionProgressR024 inspectionProgressR024 = new InspectionProgressR024();
@@ -2216,7 +2259,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                 QueryVehicleCriteria vehicleCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                if(string.IsNullOrEmpty (vehicleCriteria.Ajlsh))
+                if (string.IsNullOrEmpty(vehicleCriteria.Ajlsh))
                 {
                     responseData.Code = "-8";
                     responseData.Message = "参数不能为空:Ajlsh";
@@ -2227,37 +2270,37 @@ namespace MotorvehicleInspectionSystem.Controllers
                 if (dtLy.Rows.Count <= 0)
                 {
                     responseData.Code = "-3";
-                    responseData.Message = "不存在对应流水号的检测车辆信息:"+vehicleCriteria.Ajlsh ;
+                    responseData.Message = "不存在对应流水号的检测车辆信息:" + vehicleCriteria.Ajlsh;
                     return inspectionProgressR024s.ToArray();
                 }
                 //检测线号
                 string jcxh = dtLy.Rows[0]["SB_TD"].ToString();
                 //线号不为空
-                if(string.IsNullOrEmpty (jcxh ) || jcxh == "-")
+                if (string.IsNullOrEmpty(jcxh) || jcxh == "-")
                 {
                     responseData.Code = "-1";
                     responseData.Message = "机动车还没有上线:" + vehicleCriteria.Ajlsh;
                     return inspectionProgressR024s.ToArray();
                 }
                 //查询工位数目
-                sql = "select count(*) from [dbo].[tb_workspaceinformation] where jcxh='"+jcxh +"'";
-                int gws =Convert.ToInt32 ( dbAj.ExecuteScalar(sql, null));
+                sql = "select count(*) from [dbo].[tb_workspaceinformation] where jcxh='" + jcxh + "'";
+                int gws = Convert.ToInt32(dbAj.ExecuteScalar(sql, null));
                 if (gws <= 0)
                 {
                     responseData.Code = "-1";
-                    responseData.Message = "检测线没有工位设置，线号："+gws;
+                    responseData.Message = "检测线没有工位设置，线号：" + gws;
                     return inspectionProgressR024s.ToArray();
                 }
                 //设置工位
                 List<StationStatus> stationStatuses = new List<StationStatus>();
-                for(int i=1; i<=gws; i++)
+                for (int i = 1; i <= gws; i++)
                 {
                     StationStatus stationStatus = new StationStatus();
                     switch (i)
                     {
                         case 1:
                             stationStatus.Gwmc = "一工位";
-                            stationStatus.Gwzt = dtLy.Rows[0]["GW_01"].ToString ();
+                            stationStatus.Gwzt = dtLy.Rows[0]["GW_01"].ToString();
                             break;
                         case 2:
                             stationStatus.Gwmc = "二工位";
@@ -2270,8 +2313,12 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
                     stationStatuses.Add(stationStatus);
                 }
+                inspectionProgressR024.Ajlsh = dtLy.Rows[0]["lsh"].ToString();
                 inspectionProgressR024.Jcgw = stationStatuses.ToArray();
-                inspectionProgressR024s.Add(inspectionProgressR024 );
+                inspectionProgressR024.Xszt = dtLy.Rows[0]["isonline"].ToString();
+                inspectionProgressR024s.Add(inspectionProgressR024);
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
             }
             catch (ArgumentNullException)
             {

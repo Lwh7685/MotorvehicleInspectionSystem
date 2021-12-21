@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
 using Newtonsoft.Json;
@@ -152,6 +153,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                         ModerationQueueR013[] moderationQueueR013s = QC.LYYDJKR013(requestData ,responseData );
                         responseData.Body = moderationQueueR013s;
                         break;
+                    case "LYYDJKR014":
+                        QC.LYYDJKR014(requestData, responseData);
+                        break;
                     case "LYYDJKR015":
                         SystemParameter[] systemParameters = QC.LYYDJKR015(responseData);
                         responseData.Body = systemParameters;
@@ -265,6 +269,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                     case "LYYDJKW003":
                         SaveResult[] saveResults003 = WC.LYYDJKW003(requestData, responseData);
                         responseData.Body = saveResults003;
+                        break;
+                    case "LYYDJKW004":
+                        SaveResult[] saveResults004 = WC.LYYDJKW004(requestData, responseData);
+                        responseData.Body = saveResults004;
                         break;
                     //保存签名
                     case "LYYDJKW006":

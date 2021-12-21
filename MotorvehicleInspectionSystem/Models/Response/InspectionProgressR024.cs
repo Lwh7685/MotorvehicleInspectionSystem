@@ -15,6 +15,10 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// </summary>
         public string Ajlsh { get; set; }
         /// <summary>
+        /// 线上状态  isonline
+        /// </summary>
+        public string Xszt { get; set; }
+        /// <summary>
         /// 检测工位
         /// </summary>
         public StationStatus[] Jcgw { get; set; }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.ChargePayment;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
@@ -199,7 +200,53 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return saveResults.ToArray();
         }
-
+        /// <summary>
+        /// 保存收费信息
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public SaveResult[] LYYDJKW004(RequestData requestData, ResponseData responseData)
+        {
+            List<SaveResult> saveResults = new List<SaveResult>();
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                ChargePayment chargePayment = JSONHelper.ConvertObject<ChargePayment>(requestData.Body[0]);
+                //保存明细
+                if (!chargePayment.SaveDetails(dbAj))
+                {
+                    responseData.Code = "-99";
+                    responseData.Message = "SaveDetails()";
+                    return saveResults.ToArray();
+                }
+                //保存订单
+                if (!chargePayment.SaveOrder(dbAj))
+                {
+                    responseData.Code = "-99";
+                    responseData.Message = "SaveOrder()";
+                    return saveResults.ToArray();
+                }
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return saveResults.ToArray();
+        }
         /// <summary>
         /// 保存签名
         /// </summary>
@@ -1701,25 +1748,25 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                 StartDetectionW015 startDetectionW015 = JSONHelper.ConvertObject<StartDetectionW015>(requestData.Body[0]);
-                if(string.IsNullOrEmpty (startDetectionW015.Ajlsh))
+                if (string.IsNullOrEmpty(startDetectionW015.Ajlsh))
                 {
                     responseData.Code = "-8";
                     responseData.Message = "参数不能为空:Ajlsh";
                     return saveResults.ToArray();
                 }
-                if (string.IsNullOrEmpty(startDetectionW015.Ycy ))
+                if (string.IsNullOrEmpty(startDetectionW015.Ycy))
                 {
                     responseData.Code = "-8";
                     responseData.Message = "参数不能为空:Ycy";
                     return saveResults.ToArray();
                 }
-                if (string.IsNullOrEmpty(startDetectionW015.Jcxh ))
+                if (string.IsNullOrEmpty(startDetectionW015.Jcxh))
                 {
                     responseData.Code = "-8";
                     responseData.Message = "参数不能为空:Jcxh";
                     return saveResults.ToArray();
                 }
-                string sql = "update LY_Flow_Info set isonline ='1',Ry_05='"+startDetectionW015.Ycy +"',SB_TD ='"+startDetectionW015.Jcxh +"' where Lsh ='"+startDetectionW015.Ajlsh +"'";
+                string sql = "update LY_Flow_Info set isonline ='1',sxsj=convert(varchar(20),getdate(),120),Ry_05='" + startDetectionW015.Ycy + "',SB_TD ='" + startDetectionW015.Jcxh + "' where Lsh ='" + startDetectionW015.Ajlsh + "'";
                 int reI = dbAj.ExecuteNonQuery(sql, null);
                 if (reI == 1)
                 {
@@ -1729,9 +1776,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                 else
                 {
                     responseData.Code = "-1";
-                    responseData.Message = "上线失败：" + reI ;
+                    responseData.Message = "上线失败：" + reI;
                 }
-                
+
             }
             catch (ArgumentNullException)
             {

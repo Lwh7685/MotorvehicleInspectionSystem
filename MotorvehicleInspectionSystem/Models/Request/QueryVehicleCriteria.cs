@@ -65,5 +65,11 @@ namespace MotorvehicleInspectionSystem.Models.Request
 
         public int Ajjccs { get; set; }
         public int Hjjccs { get; set; }
+        #region 查询收费使用
+        /// <summary>
+        /// 订单编号  收费
+        /// </summary>
+        public string Oid { get; set; }
+        #endregion 
     }
 }

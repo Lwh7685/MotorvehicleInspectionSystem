@@ -58,5 +58,10 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// 数据类别
         /// </summary>
         public string Sjlb { get; set; }
+
+        public string Appid { get; set; }
+        public string Md5key { get; set; }
+        public string C { get; set; }
+        public string C1 { get; set; }
     }
 }
