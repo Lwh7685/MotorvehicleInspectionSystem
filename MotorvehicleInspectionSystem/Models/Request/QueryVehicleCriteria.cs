@@ -70,6 +70,12 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 订单编号  收费
         /// </summary>
         public string Oid { get; set; }
+        #endregion
+        #region 查询客户开票信息使用
+        /// <summary>
+        /// 购方名称
+        /// </summary>
+        public string Buyername { get; set; }
         #endregion 
     }
 }

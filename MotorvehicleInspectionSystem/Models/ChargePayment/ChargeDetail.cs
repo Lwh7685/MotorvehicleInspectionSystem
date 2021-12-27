@@ -13,30 +13,30 @@ namespace MotorvehicleInspectionSystem.Models.ChargePayment
         /// <summary>
         /// 订单编号
         /// </summary>
-        public string Orderno;
+        public string Orderno { get; set; }
         /// <summary>
         /// 明细编号
         /// </summary>
-        public string Detailno;
+        public string Detailno { get; set; }
         /// <summary>
         /// 商品编号
         /// </summary>
-        public string Goodsno;
+        public string Goodsno { get; set; }
         /// <summary>
         /// 商品名称
         /// </summary>
-        public string Goodsname;
+        public string Goodsname { get; set; }
         /// <summary>
         /// 数量
         /// </summary>
-        public string Num;
+        public string Num { get; set; }
         /// <summary>
         /// 单价
         /// </summary>
-        public string Price;
+        public string Price { get; set; }
         /// <summary>
         /// 总金额
         /// </summary>
-        public string Zje;
+        public string Zje { get; set; }
     }
 }

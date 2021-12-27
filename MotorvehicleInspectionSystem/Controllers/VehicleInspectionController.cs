@@ -2,13 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.ChargePayment;
 using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Collections.Generic; 
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -155,7 +156,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = moderationQueueR013s;
                         break;
                     case "LYYDJKR014":
-                        QC.LYYDJKR014(requestData, responseData);
+                        ChargePayment[]  chargePayments = QC.LYYDJKR014(requestData, responseData);
+                        responseData.Body = chargePayments;
                         break;
                     case "LYYDJKR015":
                         SystemParameter[] systemParameters = QC.LYYDJKR015(responseData);
@@ -200,6 +202,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                     case "LYYDJKR025":
                         InvoiceParameters[] invoiceParameters = QC.LYYDJKR025(responseData);
                         responseData.Body = invoiceParameters;
+                        break;
+                    case "LYYDJKR026":
+                        EInvoiceBuyer[] invoiceBuyers = QC.LYYDJKR026(requestData, responseData);
+                        responseData.Body = invoiceBuyers;
                         break;
                     default:
                         responseData.Code = "-7";
@@ -314,6 +320,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                     case "LYYDJKW012":
                         SaveResult[] saveResults012 = WC.LYYDJKW012(requestData, responseData, zdbs);
                         responseData.Body = saveResults012;
+                        break;
+                    case "LYYDJKW013":
+                        SaveResult[] saveResults013 = WC.LYYDJKW013(requestData, responseData, zdbs);
+                        responseData.Body = saveResults013;
                         break;
                     case "LYYDJKW015":
                         SaveResult[] saveResults015 = WC.LYYDJKW015(requestData, responseData);

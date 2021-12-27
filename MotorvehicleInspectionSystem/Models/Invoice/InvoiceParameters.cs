@@ -46,5 +46,9 @@ namespace MotorvehicleInspectionSystem.Models.Invoice
         /// 商品编码
         /// </summary>
         public string Spbm { get; set; }
+        /// <summary>
+        /// 税率
+        /// </summary>
+        public string Sl { get; set; }
     }
 }

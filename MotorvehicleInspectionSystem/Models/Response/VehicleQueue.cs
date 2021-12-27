@@ -83,6 +83,13 @@ namespace MotorvehicleInspectionSystem.Models
         /// 是否开票 0=未开票  1=已开票
         /// </summary>
         public string Sfkp { get; set; }
-
+        /// <summary>
+        /// 车辆类型
+        /// </summary>
+        public string Cllx { get; set; }
+        /// <summary>
+        /// 车辆类型汉字
+        /// </summary>
+        public string CllxCc { get; set; }
     }
 }

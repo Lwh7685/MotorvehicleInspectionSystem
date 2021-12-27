@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
+using MotorvehicleInspectionSystem.Models.ChargePayment;
 using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
@@ -82,14 +83,15 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     sql = "select t1.Lsh as Lsh,t1.Lsh as ajlsh,t2.hphm as Hphm,t1.Jccs,t1.ajjccs ";
                     sql += " ,(select mc from jscscode where dm = t2.hpzl and fl = '09') as HpzlCc ,t2.hpzl as Hpzl ";
+                    sql += " ,(select mc from jscscode where dm = t3.cllx and fl = '07') as CllxCc ,t3.cllx as Cllx ";
                     sql += " ,(select mc from jscscode where dm = t2.hpys and fl = '26') as HpysCc ,t2.hpys as Hpys ";
                     sql += " ,convert(varchar(19), convert(datetime, t1.AddRq ), 120) as Djrq ";
                     sql += " ,(case t1.isonline when '0' then '未上线' when '1' then '线上检验' when '2' then '线上结束' end ) as Jyzt  ";
                     sql += " ,(select mc from jscscode where dm=t1.ajywlb and fl='08') as ajywlbCc ,t1.ajywlb as ajywlb ";
                     sql += " ,'-' as hjywlbCc ,'-' as hjywlb,'-' as hjlsh ";
                     sql += " ,'安检' as Ywlb ,'0' as hjjccs,t2.sfjf as sfsf,t2.sfkp as sfkp ";
-                    sql += " from LY_Flow_Info t1,BaseInfo_Hand t2 ";
-                    sql += " where t1.Lsh = t2.Lsh  and (t2.tb <>'1' or t2.tb is null)";
+                    sql += " from LY_Flow_Info t1,BaseInfo_Hand t2,baseinfo_net t3 ";
+                    sql += " where t1.Lsh = t2.Lsh and t1.lsh=t3.lsh  and (t2.tb <>'1' or t2.tb is null)";
                     if (queryVehQueueR002.Hphm == "")
                     {
                         sql += " and convert(varchar(10),convert(datetime, t1.AddRq),120) = convert(varchar(10), GETDATE(), 120) ";
@@ -105,6 +107,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         sql = " select t1.Lsh as Lsh,t2.hphm as Hphm,t1.Jccs as hjjccs ";
                         sql += " ,(select mc from jscscode where dm = t2.hpzl and fl = '09') as HpzlCc ,t2.hpzl as Hpzl ";
                         sql += " ,(select mc from jscscode where dm = t2.gcjk and fl = '36') as HpysCc ,t2.gcjk as Hpys ";
+                        sql += " ,(select mc from jscscode where dm = t2.cllx and fl = '07') as CllxCc ,t2.cllx as Cllx ";
                         sql += " ,convert(varchar(10), convert(datetime, t1.Jcdate ), 120) +' '+ t1.Jctime  as Djrq  ";
                         sql += " ,'' as Jyzt ";
                         sql += " ,(select mc from jscscode where dm = t1.Jclb and fl = '08') as hjywlbCc,t1.Jclb as hjywlb ";
@@ -126,6 +129,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     sql = " select t1.Lsh as Lsh ,t1.Lsh as hjlsh,t2.hphm as Hphm,t1.Jccs as jccs,t1.Jccs as hjjccs ";
                     sql += " ,(select mc from jscscode where dm = t2.hpzl and fl = '09') as HpzlCc ,t2.hpzl as Hpzl ";
+                    sql += " ,(select mc from jscscode where dm = t2.cllx and fl = '07') as CllxCc ,t2.cllx as Cllx ";
                     sql += " ,(select mc from jscscode where dm = t2.gcjk and fl = '36') as HpysCc ,t2.gcjk as Hpys ";
                     sql += " ,convert(varchar(10), convert(datetime, t1.Jcdate ), 120) +' '+ t1.Jctime  as Djrq  ";
                     sql += " ,'' as Jyzt ";
@@ -210,6 +214,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                     dr["hphm"] = Hj.Rows[i]["hphm"].ToString();
                     dr["hpzl"] = Hj.Rows[i]["hpzl"].ToString();
                     dr["hpzlCc"] = Hj.Rows[i]["hpzlCc"].ToString();
+                    dr["Cllx"] = Hj.Rows[i]["Cllx"].ToString();
+                    dr["CllxCc"] = Hj.Rows[i]["CllxCc"].ToString();
                     dr["hjlsh"] = Hj.Rows[i]["lsh"].ToString();
                     dr["lsh"] = Hj.Rows[i]["lsh"].ToString();
                     dr["hjywlb"] = Hj.Rows[i]["hjywlb"].ToString();
@@ -870,15 +876,46 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 QueryVehicleCriteria queryUploadAVIR008 = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,* ,(select mc from jscscode where fl='84' and dm=xmbh ) spmc, jcrq +' '+ TimS  as jcsj  ";
-                sql += " from UpLoad_AVI_XML where jcbh = '" + queryUploadAVIR008.Lsh + "'";
-                if (queryUploadAVIR008.Jccs != 0)
+                if (queryUploadAVIR008.Ajlsh != "" && string.IsNullOrEmpty(queryUploadAVIR008.Ajlsh))
                 {
-                    sql += " and jklx ='" + queryUploadAVIR008.Jccs.ToString() + "'";
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,* ,(select mc from jscscode where fl='84' and dm=xmbh ) spmc, jcrq +' '+ TimS  as jcsj,REPLACE (InBz_02,'D:\','lxdz\') as lxdz  ";
+                    sql += " from UpLoad_AVI_XML where jcbh = '"+queryUploadAVIR008.Ajlsh +"'";//+ queryUploadAVIR008.Lsh +
+                    //if (queryUploadAVIR008.Jccs != 0)
+                    //{
+                    //    sql += " and jklx ='" + queryUploadAVIR008.Jccs.ToString() + "'";
+                    //}
+                    sql += " order by JcJsSj ";
+                    try
+                    {
+                        uploadAVIs = dbAj.QueryForList<UploadAVI>(sql, null);
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        
+                    }
                 }
-                sql += " order by JcJsSj ";
-                uploadAVIs = dbAj.QueryForList<UploadAVI>(sql, null);
+                if(queryUploadAVIR008.Hjlsh !="" && string.IsNullOrEmpty (queryUploadAVIR008.Hjlsh))
+                {
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,* ,(select mc from jscscode where fl='84' and dm=xmbh ) spmc, jcrq +' '+ TimS  as jcsj,REPLACE (InBz_02,'D:\','lxdz\') as lxdz  ";
+                    sql += " from UpLoad_AVI_XML where jcbh = '"+queryUploadAVIR008.Hjlsh +"'";//+ queryUploadAVIR008.Lsh +
+                    //if (queryUploadAVIR008.Jccs != 0)
+                    //{
+                    //    sql += " and jklx ='" + queryUploadAVIR008.Jccs.ToString() + "'";
+                    //}
+                    sql += " order by JcJsSj ";
+                    List<UploadAVI> uploadAVIs2 = new List<UploadAVI>();
+                    try
+                    {
+                        uploadAVIs2 = dbHj.QueryForList<UploadAVI>(sql, null);
+                    }
+                    catch (ArgumentNullException)
+                    {
+
+                    }
+                    uploadAVIs = uploadAVIs.Concat(uploadAVIs2).ToList<UploadAVI>();
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -1238,27 +1275,78 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// </summary>
         /// <param name="requestData"></param>
         /// <param name="responseData"></param>
-        public void LYYDJKR014(RequestData requestData , ResponseData responseData)
+        public ChargePayment[] LYYDJKR014(RequestData requestData, ResponseData responseData)
         {
+            List<ChargePayment> chargePayments = new List<ChargePayment>();
             try
             {
                 string sql = "";
                 QueryVehicleCriteria vehicleCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
                 DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionResults] where bizseq ='" + vehicleCriteria.Oid + "' and trxstatus ='0000' ";
-                int countR1 =Convert.ToInt32 ( db.ExecuteScalar(sqlStr, null));
-                sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionReturn] where orderid ='" + vehicleCriteria.Oid + "' and trxstatus ='0000'";
-                int countR2 = Convert.ToInt32(db.ExecuteScalar(sqlStr, null));                
-                if(countR1 >0 | countR2 > 0)
+                if (!string.IsNullOrEmpty(vehicleCriteria.Oid))
+                {
+                    string sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionResults] where bizseq ='" + vehicleCriteria.Oid + "' and trxstatus ='0000' ";
+                    int countR1 = Convert.ToInt32(db.ExecuteScalar(sqlStr, null));
+                    sqlStr = "select count(*) from [dbo].[tb_ChargeTransactionReturn] where orderid ='" + vehicleCriteria.Oid + "' and trxstatus ='0000'";
+                    int countR2 = Convert.ToInt32(db.ExecuteScalar(sqlStr, null));
+                    if (countR1 > 0 | countR2 > 0)
+                    {
+                        responseData.Code = "1";
+                        responseData.Message = "SUCCESS";
+                        //sql = "select top 1 *,lsh as ajlsh from [dbo].[tb_ChargePaymentOrders] where oid ='" + vehicleCriteria.Oid  + "' order by addtime desc";
+                        //ChargeOrder chargeOrder = db.QueryForObject<ChargeOrder>(sql, null);
+                        //sql = "select * from [dbo].[tb_ChargePaymentDetail] where orderno ='" + chargeOrder.Oid + "'";
+                        //List<ChargeDetail> chargeDetails = db.QueryForList<ChargeDetail>(sql, null);
+                        //ChargePayment chargePayment = new ChargePayment()
+                        //{
+                        //    chargeDetails = chargeDetails.ToArray(),
+                        //    chargeOrder = chargeOrder
+                        //};
+                        //chargePayments.Add(chargePayment);
+                    }
+                    else
+                    {
+                        responseData.Code = "1";
+                        responseData.Message = "waiting...";
+
+                        //sql = "select top 1 *,lsh as ajlsh from [dbo].[tb_ChargePaymentOrders] where oid ='" + vehicleCriteria.Oid + "' order by addtime desc";
+                        //ChargeOrder chargeOrder = db.QueryForObject<ChargeOrder>(sql, null);
+                        //sql = "select orderno as Orderno,detailno as Detailno,goodsno as Goodsno,goodsname as Goodsname,num as Num,price as Price,zje as Zje  from [dbo].[tb_ChargePaymentDetail] where orderno ='" + chargeOrder.Oid + "'";
+                        //List<ChargeDetail> chargeDetails = db.QueryForList<ChargeDetail>(sql, null);
+                        //ChargePayment chargePayment = new ChargePayment()
+                        //{
+                        //    chargeDetails = chargeDetails.ToArray(),
+                        //    chargeOrder = chargeOrder
+                        //};
+                        //chargePayments.Add(chargePayment);
+                    }
+                }
+                if (!string.IsNullOrEmpty(vehicleCriteria.Ajlsh))
                 {
                     responseData.Code = "1";
                     responseData.Message = "SUCCESS";
+                    sql = "select * from baseinfo_hand where lsh='" + vehicleCriteria.Ajlsh + "' and sfjf='1'";
+                    DataTable dt = db.ExecuteDataTable(sql, null);
+                    if (dt.Rows.Count > 0)
+                    {
+                        sql = "select top 1 *,lsh as ajlsh from [dbo].[tb_ChargePaymentOrders] where lsh ='" + vehicleCriteria.Ajlsh + "' order by addtime desc";
+                        ChargeOrder chargeOrder = db.QueryForObject<ChargeOrder>(sql, null);
+                        sql = "select * from [dbo].[tb_ChargePaymentDetail] where orderno ='" + chargeOrder.Oid + "'";
+                        List<ChargeDetail> chargeDetails = db.QueryForList<ChargeDetail>(sql, null);
+                        ChargePayment chargePayment = new ChargePayment()
+                        {
+                            chargeDetails = chargeDetails.ToArray(),
+                            chargeOrder = chargeOrder
+                        };
+                        chargePayments.Clear();
+                        chargePayments.Add(chargePayment);
+                    }
+                    else
+                    {
+                        responseData.Code = "0";
+                        responseData.Message = "查询无数据";
+                    }
                 }
-                else
-                {
-                    responseData.Code = "0";
-                    responseData.Message = "waiting...";
-                }               
             }
             catch (ArgumentNullException ex)
             {
@@ -1270,8 +1358,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                 responseData.Code = "-99";
                 responseData.Message = e.Message;
             }
+            return chargePayments.ToArray();
         }
-
         /// <summary>
         /// 查询数据库系统参数
         /// </summary>
@@ -1315,7 +1403,6 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             return systemParametes.ToArray();
         }
-
         /// <summary>
         /// 根据流水号查询机动车人工检验项目详细信息
         /// </summary>
@@ -2343,13 +2430,13 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// </summary>
         /// <param name="responseData"></param>
         /// <returns></returns>
-        public InvoiceParameters[] LYYDJKR025 (ResponseData responseData)
+        public InvoiceParameters[] LYYDJKR025(ResponseData responseData)
         {
             List<InvoiceParameters> invoiceParameters = new List<InvoiceParameters>();
             try
             {
                 DbUtility dnAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = "select Cs_01 as Skdwsbh,Cs_02 as Shr,Cs_03 as Skdwmc,Cs_04 as Bmdm,Cs_05 as Spbm,Cs_08 as Dh,Cs_09 as Dz,Cs_10 as Khh,Cs_12 as Fpjksfsbm from FP_SysCs";
+                string sql = "select Cs_01 as Skdwsbh,Cs_02 as Shr,Cs_03 as Skdwmc,Cs_04 as Bmdm,Cs_05 as Spbm,Cs_08 as Dh,Cs_09 as Dz,Cs_10 as Khh,Cs_12 as Fpjksfsbm,'0.06' as Sl from FP_SysCs";
                 invoiceParameters = dnAj.QueryForList<InvoiceParameters>(sql, null);
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
@@ -2370,6 +2457,48 @@ namespace MotorvehicleInspectionSystem.Controllers
                 responseData.Message = e.Message;
             }
             return invoiceParameters.ToArray();
+        }
+        /// <summary>
+        /// 查询客户单位开票信息
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public EInvoiceBuyer[] LYYDJKR026(RequestData requestData, ResponseData responseData)
+        {
+            List<EInvoiceBuyer> invoiceBuyers = new List<EInvoiceBuyer>();
+            try
+            {
+                QueryVehicleCriteria queryVehicleCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                if (string.IsNullOrEmpty(queryVehicleCriteria.Buyername))
+                {
+                    responseData.Code = "-8";
+                    responseData.Message = "参数不能为空:Buyername";
+                    return invoiceBuyers.ToArray();
+                }
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                string sql = "select * from T_EInvoiceBuyer where buyername='" + queryVehicleCriteria.Buyername + "'";
+                invoiceBuyers = dbAj.QueryForList<EInvoiceBuyer>(sql, null);
+
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "0";
+                responseData.Message = "没有查到参数！";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return invoiceBuyers.ToArray();
         }
     }
 }

@@ -58,7 +58,7 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// 录像地址
         /// </summary>
         [JsonProperty("Lxdz")]
-        public string InBz_02 { get; set; }
+        public string Lxdz { get; set; }
         /// <summary>
         /// 视频名称
         /// </summary>

@@ -40,7 +40,7 @@ namespace MotorvehicleInspectionSystem.Models.ChargePayment
                     sqlStr += " '" + chargeDetails[i].Price + "',"; // ,<price, decimal(16,2),>
                     sqlStr += " '" + chargeDetails[i].Zje + "')"; // ,<zje, varchar(16),>)"
                     int reInt = dbUtility.ExecuteNonQuery(sqlStr,null);
-                    if (reInt == -1)
+                    if (reInt !=1)
                         return false;
                 }
                 return true;
@@ -71,7 +71,7 @@ namespace MotorvehicleInspectionSystem.Models.ChargePayment
                 sqlStr += " getdate(),"; // ,<addtime, datetime,>
                 sqlStr += " '0')"; // ,<queryFlag, varchar(2),>)"
                 int reInt = dbUtility.ExecuteNonQuery(sqlStr, null);
-                if (reInt == -1)
+                if (reInt!=1)
                     return false;
                 return true;
             }

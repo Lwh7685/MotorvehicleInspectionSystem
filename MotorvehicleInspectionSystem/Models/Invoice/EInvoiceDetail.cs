@@ -17,7 +17,7 @@ namespace MotorvehicleInspectionSystem.Models.Invoice
         /// <summary>
         /// 明细编号
         /// </summary>
-        public int Detailno { get; set; }
+        public string Detailno { get; set; }
         /// <summary>
         /// 商品名称
         /// </summary>

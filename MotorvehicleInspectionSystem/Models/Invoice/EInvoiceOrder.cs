@@ -168,5 +168,9 @@ namespace MotorvehicleInspectionSystem.Models.Invoice
         public string C_buyername { get; set; }
         public string C_taxnum { get; set; }
         public string C_jym { get; set; }
+        /// <summary>
+        /// 购方类型
+        /// </summary>
+        public string Buyertype { get; set; }
     }
 }
