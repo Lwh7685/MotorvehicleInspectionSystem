@@ -264,12 +264,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                 }
                 //jsonData合法
                 requestData = JSONHelper.DeserializeJson<RequestData>(jsonData);
-                //将文本追加到文件末尾
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"D:\WriteLines2.txt", true))
-                {
-                    file.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "----" + jkId + "----" + jsonData + "/n");
-
-                }
+                ////将文本追加到文件末尾
+                //using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"D:\WriteLines2.txt", true))
+                //{
+                //    file.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "----" + jkId + "----" + jsonData + "/n");
+                //}
                 switch (jkId)
                 {
                     //用户登录
@@ -325,6 +324,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                         SaveResult[] saveResults013 = WC.LYYDJKW013(requestData, responseData, zdbs);
                         responseData.Body = saveResults013;
                         break;
+
+                    case "LYYDJKW014":
+                        SaveResult[] saveResults014 = WC.LYYDJKW014(requestData, responseData, zdbs);
+                        responseData.Body = saveResults014;
+                        break;
                     case "LYYDJKW015":
                         SaveResult[] saveResults015 = WC.LYYDJKW015(requestData, responseData);
                         responseData.Body = saveResults015;
@@ -344,6 +348,11 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 responseData.Code = "-99";
                 responseData.Message = "数据格式不规范（jsonData）";
+            }
+            catch (Exception ex)
+            {
+                responseData.Code = "-99";
+                responseData.Message = ex.Message ;
             }
             responseData.RowNum = responseData.Body.Count();
             responseData.Message = responseData.Message + "(" + jkId + ")";

@@ -357,8 +357,6 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             //在安检的时候，车辆识别代号不为空的时候，从监管平台获取，不再从数据库查询
                             sql += "and tn.clsbdh like '%" + queryVehicleDetailsR005.Clsbdh.Trim().Replace("'", "").Replace("-", "") + "'";
-
-
                         }
                         //行驶证编号
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Xszbh))
@@ -423,6 +421,10 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 vehicleDetails.Add(vehicleDetails1);
                             }
                         }
+                    }
+                    else
+                    {
+                        vehicleDetails.Add(vehicleDetails1);
                     }
                     responseData.RowNum = vehicleDetails.Count;
                     responseData.Code = "1";
@@ -880,7 +882,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
                     string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,* ,(select mc from jscscode where fl='84' and dm=xmbh ) spmc, jcrq +' '+ TimS  as jcsj,REPLACE (InBz_02,'D:\','lxdz\') as lxdz  ";
-                    sql += " from UpLoad_AVI_XML where jcbh = '"+queryUploadAVIR008.Ajlsh +"'";//+ queryUploadAVIR008.Lsh +
+                    sql += " from UpLoad_AVI_XML where jcbh = '" + queryUploadAVIR008.Ajlsh + "'";//+ queryUploadAVIR008.Lsh +
                     //if (queryUploadAVIR008.Jccs != 0)
                     //{
                     //    sql += " and jklx ='" + queryUploadAVIR008.Jccs.ToString() + "'";
@@ -892,14 +894,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
                     catch (ArgumentNullException)
                     {
-                        
+
                     }
                 }
-                if(queryUploadAVIR008.Hjlsh !="" && string.IsNullOrEmpty (queryUploadAVIR008.Hjlsh))
+                if (queryUploadAVIR008.Hjlsh != "" && string.IsNullOrEmpty(queryUploadAVIR008.Hjlsh))
                 {
                     DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
                     string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as rownum,* ,(select mc from jscscode where fl='84' and dm=xmbh ) spmc, jcrq +' '+ TimS  as jcsj,REPLACE (InBz_02,'D:\','lxdz\') as lxdz  ";
-                    sql += " from UpLoad_AVI_XML where jcbh = '"+queryUploadAVIR008.Hjlsh +"'";//+ queryUploadAVIR008.Lsh +
+                    sql += " from UpLoad_AVI_XML where jcbh = '" + queryUploadAVIR008.Hjlsh + "'";//+ queryUploadAVIR008.Lsh +
                     //if (queryUploadAVIR008.Jccs != 0)
                     //{
                     //    sql += " and jklx ='" + queryUploadAVIR008.Jccs.ToString() + "'";
@@ -2018,6 +2020,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     responseData.Message = "查询条件不能全部为空（Ajywlb）";
                     return artificialProjectR016s.ToArray();
                 }
+                else
                 if (string.IsNullOrEmpty(queryCriteria.Hjywlb))
                 {
                     responseData.Code = "-1";
@@ -2050,7 +2053,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
-                                sql += " ,mc as Xmms,'1' as Sycx ";
+                                sql += " ,mc as Xmms,'1' as Sycx ,ms as Jyyq";
                                 sql += " from[dbo].[QcyJcWgDpDmInfo] t2 ";
                                 sql += " where t2.Fl = '5' order by Sycx desc, itemdm ";
                                 break;
@@ -2064,7 +2067,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
-                                sql += " ,mc as Xmms";
+                                sql += " ,mc as Xmms ,ms as Jyyq";
                                 sql += " ,case when t2.dm in (" + mrhgStr + ") then '1' else  '0' end  as Sycx";
                                 sql += " from[dbo].[QcyJcWgDpDmInfo] t2 ";
                                 sql += " where t2.Fl = '6' order by Sycx desc, itemdm ";
@@ -2076,7 +2079,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
-                                sql += " ,mc as Xmms ";
+                                sql += " ,mc as Xmms ,ms as Jyyq ";
                                 sql += " ,case when t2.dm in (" + mrhgStr + ") then '1' else  '0' end  as Sycx";
                                 sql += " from[dbo].[QcyJcWgDpDmInfo] t2 ";
                                 sql += " where t2.Fl = '1' order by Sycx desc, itemdm ";
@@ -2088,7 +2091,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
-                                sql += " ,mc as Xmms ";
+                                sql += " ,mc as Xmms ,ms as Jyyq ";
                                 sql += " ,case when t2.dm in (" + mrhgStr + ") then '1' else  '0' end  as Sycx";
                                 sql += " from[dbo].[QcyJcWgDpDmInfo] t2 ";
                                 sql += " where t2.Fl = '2' order by Sycx desc, itemdm ";
@@ -2100,7 +2103,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " ,'" + wjcx + "' as cartype ,(select mc from jscscode where fl = '60' and dm = '" + wjcx + "' ) as wjcxmc  ";
                                 sql += " ,case t2.Fl when '1' then '外观' when '2' then '底盘' when '3' then '底盘动态' when '5' then '联网查询' when '6' then '唯一性检查' else t2.Fl end as Fldm ";
                                 sql += " ,t2.dm as itemdm ";
-                                sql += " ,mc as Xmms ";
+                                sql += " ,mc as Xmms ,ms as Jyyq ";
                                 sql += " ,case when t2.dm in (" + mrhgStr + ") then '1' else  '0' end  as Sycx";
                                 sql += " from[dbo].[QcyJcWgDpDmInfo] t2 ";
                                 sql += " where t2.Fl = '3' order by Sycx desc, itemdm ";
@@ -2140,7 +2143,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
 
                         sql = "SELECT ROW_NUMBER()OVER(ORDER BY (select 0)) as id ";
-                        sql += " ,'' as Cartype,'' as Wjcxmc, fl as Fldm,dm as ItemDm ,mc as Xmms ,'1' as Sycx ";
+                        sql += " ,'' as Cartype,'' as Wjcxmc, fl as Fldm,dm as ItemDm ,mc as Xmms,'-' as Jyyq ,'1' as Sycx ";
                         sql += " FROM QcyJcWgDpDmInfo WHERE 1 = 1 and Fl = '1' order by dm ";
                         artificialProjects = dbHj.QueryForList<ArtificialProject>(sql, null);
                         artificialProjectR016 = new ArtificialProjectR016();

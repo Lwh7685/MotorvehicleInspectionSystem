@@ -63,6 +63,10 @@ namespace MotorvehicleInspectionSystem.Models.Response
         /// 使用车型 0=不适用  1=适用 -=未查询
         /// </summary>
         public string Sycx { get; set; }
+        /// <summary>
+        /// 检验要求
+        /// </summary>
+        public string Jyyq { get; set; }
     }
 
 }
