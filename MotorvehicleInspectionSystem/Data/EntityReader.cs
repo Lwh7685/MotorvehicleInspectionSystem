@@ -15,7 +15,7 @@ namespace MotorvehicleInspectionSystem.Data
         private static Dictionary<Type, Dictionary<string, PropertyInfo>> propertyMappings = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
 
         /// <summary>   
-        /// 将DataTable中的所有数据转换成List>T<集合   
+        /// 将DataTable中的所有数据转换成List集合   
         /// </summary>   
         /// <typeparam name="T">DataTable中每条数据可以转换的数据类型</typeparam>   
         /// <param name="dataTable">包含有可以转换成数据类型T的数据集合</param>   
@@ -41,10 +41,10 @@ namespace MotorvehicleInspectionSystem.Data
             }
         }
         /// <summary>   
-        /// 将DbDataReader中的所有数据转换成List>T<集合   
+        /// 将DbDataReader中的所有数据转换成List集合   
         /// </summary>   
-        /// <typeparam name="T">DbDataReader中每条数据可以转换的数据类型</typeparam>   
-        /// <param name="dataTable">包含有可以转换成数据类型T的DbDataReader实例</param>   
+        /// <typeparam name="T">DbDataReader中每条数据可以转换的数据类型</typeparam>
+        /// <param name="reader"></param>   
         /// <returns></returns>   
         public static List<T> GetEntities<T>(DbDataReader reader) where T : new()
         {

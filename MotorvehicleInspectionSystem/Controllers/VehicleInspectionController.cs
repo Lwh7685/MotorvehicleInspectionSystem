@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
+using MotorvehicleInspectionSystem.Log;
 using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.ChargePayment;
 using MotorvehicleInspectionSystem.Models.Invoice;
@@ -23,6 +24,7 @@ namespace MotorvehicleInspectionSystem.Controllers
     [ApiController]
     public class VehicleInspectionController : ControllerBase
     {
+        LoggerHelper loggerHelper = new LoggerHelper();
         /// <summary>
         /// 使用安检数据库
         /// </summary>
@@ -99,6 +101,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     responseData.Message = "终端标识（zdbs）不合法";
                     return responseData;
                 }
+                loggerHelper.Info(this.GetType(),new LogContent(jkId, zdbs , "Query", jsonData));
                 //jsonData合法
                 requestData = JSONHelper.DeserializeJson<RequestData>(jsonData);
                 switch (jkId)
@@ -213,15 +216,23 @@ namespace MotorvehicleInspectionSystem.Controllers
                         break;
                 }
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException ex)
             {
                 responseData.Code = "-8";
                 responseData.Message = "参数不能为空";
+                loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
             }
-            catch (JsonSerializationException)
+            catch (JsonSerializationException ex)
             {
                 responseData.Code = "-2";
                 responseData.Message = "数据格式不规范（jsonData）";
+                loggerHelper.Error (this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData),ex);
+            }
+            catch (Exception ex)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "发生错误：" + ex.Message ;
+                loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
             }
             responseData.RowNum = responseData.Body.Count();
             responseData.Message = responseData.Message + "(" + jkId + ")";

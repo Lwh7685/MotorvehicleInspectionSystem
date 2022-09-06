@@ -249,25 +249,64 @@ namespace MotorvehicleInspectionSystem.Controllers
             try
             {
                 QueryDataDR003 queryDataDR003 = JSONHelper.ConvertObject<QueryDataDR003>(requestData.Body[0]);
-
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-
-                string sql = "select * from JsCsCode ";
-
-                sql += " where 1=1  ";
-                if (!string.IsNullOrEmpty(queryDataDR003.Fl))
+                if (VehicleInspectionController.SyAj == "1")
                 {
-                    sql += " and fl = '" + queryDataDR003.Fl + "'";
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select * from JsCsCode ";
+                    sql += " where 1=1  ";
+                    if (!string.IsNullOrEmpty(queryDataDR003.Fl))
+                    {
+                        sql += " and fl = '" + queryDataDR003.Fl + "'";
+                    }
+                    if (queryDataDR003.Dm != "" && queryDataDR003.Dm != null)
+                    {
+                        sql += " and dm = '" + queryDataDR003.Dm + "' ";
+                    }
+                    if (queryDataDR003.Mc != "" && queryDataDR003.Mc != null)
+                    {
+                        sql += " and mc = '" + queryDataDR003.Mc + "' ";
+                    }
+                    dataDictionaries = dbAj.QueryForList<DataDictionary>(sql, null);
                 }
-                if (queryDataDR003.Dm != "" && queryDataDR003.Dm != null)
+                else
                 {
-                    sql += " and dm = '" + queryDataDR003.Dm + "' ";
+
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = "select ROW_NUMBER() over(order by fl) as InfoID,* from JsCsCode ";
+                    sql += " where 1=1  ";
+                    if (!string.IsNullOrEmpty(queryDataDR003.Fl))
+                    {
+                        sql += " and fl = '" + queryDataDR003.Fl + "'";
+                    }
+                    if (queryDataDR003.Dm != "" && queryDataDR003.Dm != null)
+                    {
+                        sql += " and dm = '" + queryDataDR003.Dm + "' ";
+                    }
+                    if (queryDataDR003.Mc != "" && queryDataDR003.Mc != null)
+                    {
+                        sql += " and mc = '" + queryDataDR003.Mc + "' ";
+                    }
+                    dataDictionaries = dbHj.QueryForList<DataDictionary>(sql, null);
+                    Dictionary<string, string> keyValues = new Dictionary<string, string>();
+                    keyValues.Add("ADMISSION", "jq");
+                    keyValues.Add("CHECK_METHOD", "63");
+                    keyValues.Add("CHECK_TYPE", "31");
+                    keyValues.Add("DRIVE_FORM", "bs");
+                    keyValues.Add("DRIVE_MODE", "17");
+                    keyValues.Add("FUEL_TYPE", "02");
+                    keyValues.Add("PLATE_COLOR", "26");
+                    keyValues.Add("PLATE_TYPE", "09");
+                    keyValues.Add("PURGE_TYPE", "25");
+                    keyValues.Add("STANDARD_ID", "pj");
+                    keyValues.Add("SUPPLY_MODE", "gj");
+                    keyValues.Add("USAGE_NATURE", "01");
+                    keyValues.Add("VEHICLE_TYPE", "07");
+                    foreach (string key in keyValues.Keys)
+                    {
+                        dataDictionaries.FindAll(x => x.Fl == key).ForEach(x => x.Fl = keyValues[key]);
+                    }
+
                 }
-                if (queryDataDR003.Mc != "" && queryDataDR003.Mc != null)
-                {
-                    sql += " and mc = '" + queryDataDR003.Mc + "' ";
-                }
-                dataDictionaries = dbAj.QueryForList<DataDictionary>(sql, null);
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -286,7 +325,6 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <summary>
         /// 查询所有商品条目，供收费和开票使用
         /// </summary>
-        /// <param name="requestData">接口请求的参数</param>
         /// <param name="responseData">接口响应的参数，可改变的</param>
         /// <returns>收费条目的集合</returns>
         public ChargeItem[] LYYDJKR004(ResponseData responseData)
@@ -936,7 +974,6 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <summary>
         /// 查询当天入场的车辆队列，包含预检状态
         /// </summary>
-        /// <param name="requestData">接口请求的参数</param>
         /// <param name="responseData">接口响应的参数，可改变的</param>
         /// <returns></returns>
         public InCar[] LYYDJKR009(ResponseData responseData)
@@ -1794,6 +1831,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <summary>
         /// 查询所有人工检验项目
         /// </summary>
+        /// <param name="requestData"></param>
         /// <param name="responseData"></param>
         /// <returns></returns>
         public ArtificialProjectR016[] LYYDJKR018(RequestData requestData, ResponseData responseData)

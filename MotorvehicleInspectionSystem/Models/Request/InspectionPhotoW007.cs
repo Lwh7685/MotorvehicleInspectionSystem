@@ -50,7 +50,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 检验项目
         /// </summary>
         public string Jyxm { get; set; }
-        // <summary>
+        /// <summary>
         /// 照片代码
         /// </summary>
         public string Zpdm { get; set; }

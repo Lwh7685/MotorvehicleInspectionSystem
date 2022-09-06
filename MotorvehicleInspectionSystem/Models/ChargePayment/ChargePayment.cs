@@ -52,7 +52,6 @@ namespace MotorvehicleInspectionSystem.Models.ChargePayment
         /// <summary>
         /// 保存订单
         /// </summary>
-        /// <param name="chargeOrder"></param>
         /// <param name="dbUtility"></param>
         /// <returns></returns>
         public bool SaveOrder(DbUtility dbUtility)

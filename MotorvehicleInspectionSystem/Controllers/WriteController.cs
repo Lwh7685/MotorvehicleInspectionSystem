@@ -806,6 +806,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// </summary>
         /// <param name="requestData"></param>
         /// <param name="responseData"></param>
+        /// <param name="zdbs">终端标识</param>
         /// <returns></returns>
         public SaveResult[] LYYDJKW010(RequestData requestData, ResponseData responseData, string zdbs)
         {
@@ -1554,83 +1555,82 @@ namespace MotorvehicleInspectionSystem.Controllers
                     dbAj.ExecuteNonQuery(sqlDelete, null);
                     dbAj.ExecuteNonQuery(sqlInsert, null);
                 }
-
-                //保存环检数据库
-                //判断检测项目 F1,C1
-                string sqlHj = "";
-                string hjywlb = "-";
-                if (projectData.Jyxm == "F1")
+                if (VehicleInspectionController.SyHj == "1")
                 {
-                    projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
-                    hjywlb = projectDataF1.Hjywlb;
-                }
-                if (projectData.Jyxm == "C1")
-                {
-                    projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
-                    hjywlb = projectDataC1.Hjywlb;
-                    sqlHj = "update LY_Flow_Info set GW_03 ='3' where Lsh ='" + projectDataC1.Hjlsh + "'";
-
-                }
-                if (hjywlb != "-")
-                {
-                    if (VehicleInspectionController.SyHj != "1")
-                    {
-                        responseData.Code = "-10";
-                        responseData.Message = "检测站不包含环检业务";
-                        return saveResults.ToArray();
-                    }
-                    //保存数据
+                    //保存环检数据库
+                    //判断检测项目 F1,C1
+                    string sqlHj = "";
+                    string hjywlb = "-";
                     if (projectData.Jyxm == "F1")
                     {
                         projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
-                        projectDataItems = projectDataF1.XmlbHJ;
-                        StringBuilder xmXh = new StringBuilder();
-                        foreach (ProjectDataItem projectDataItem in projectDataItems)
-                        {
-                            xmXh.Append(projectDataItem.Xmdm).Append(":").Append(projectDataItem.Xmpj).Append(";");
-                            if (projectDataItem.Xmpj == "2")
-                            {
-                                jcpj = "-1";
-                            }
-                        }
-                        sqlHj = "INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC])VALUES (";
-                        sqlHj += " '" + projectDataF1.Hjlsh + "',";
-                        sqlHj += " '" + projectDataF1.Hpzl + "',";
-                        sqlHj += " '" + projectDataF1.Hphm + "',";
-                        sqlHj += " '" + projectDataF1.Hjjccs + "',";
-                        sqlHj += " '" + DateTime.Now.ToString("yyyyMMdd") + "',";
-                        sqlHj += " '" + projectDataF1.Jckssj + "',";
-                        sqlHj += " '" + projectDataF1.Jcjssj + "',";
-                        sqlHj += " '" + jcpj + "',";
-                        sqlHj += " '" + "F1" + "',";
-                        sqlHj += " '" + xmXh.ToString() + "',";
-                        sqlHj += " '" + projectDataF1.Wgjcjyy + "',";
-                        sqlHj += " '" + projectDataF1.Jcxh + "')";
-                        dbHj.ExecuteNonQuery(sqlHj, null);
-                        //直接更新状态吧，0=未检 1=正在检测，2=检测完成 3=上传数据                        
-                        sqlHj = "update LY_Flow_Info set GW_01 ='3' where Lsh ='" + projectDataF1.Hjlsh + "'";
+                        hjywlb = projectDataF1.Hjywlb;
                     }
-                    //更新状态
-                    int reInt = dbHj.ExecuteNonQuery(sqlHj, null);
-                    if (reInt == 1)
+                    if (projectData.Jyxm == "C1")
                     {
+                        projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
+                        hjywlb = projectDataC1.Hjywlb;
+                        sqlHj = "update LY_Flow_Info set GW_03 ='3' where Lsh ='" + projectDataC1.Hjlsh + "'";
 
                     }
-                    else
+                    if (hjywlb != "-")
                     {
-                        responseData.Code = "-1";
-                        responseData.Message = "检验项目状态修改失败";
-                    }
-                    //记录项目开始
-                    if (SaveDetectionProcess("2", projectData, zdbs, dbHj, "Hj"))
-                    {
-                        responseData.Code = "1";
-                        responseData.Message = "SUCCESS";
-                    }
-                    else
-                    {
-                        responseData.Code = "-11";
-                        responseData.Message = "日志记录失败";
+                       
+                        //保存数据
+                        if (projectData.Jyxm == "F1")
+                        {
+                            projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
+                            projectDataItems = projectDataF1.XmlbHJ;
+                            StringBuilder xmXh = new StringBuilder();
+                            foreach (ProjectDataItem projectDataItem in projectDataItems)
+                            {
+                                xmXh.Append(projectDataItem.Xmdm).Append(":").Append(projectDataItem.Xmpj).Append(";");
+                                if (projectDataItem.Xmpj == "2")
+                                {
+                                    jcpj = "-1";
+                                }
+                            }
+                            sqlHj = "INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC])VALUES (";
+                            sqlHj += " '" + projectDataF1.Hjlsh + "',";
+                            sqlHj += " '" + projectDataF1.Hpzl + "',";
+                            sqlHj += " '" + projectDataF1.Hphm + "',";
+                            sqlHj += " '" + projectDataF1.Hjjccs + "',";
+                            sqlHj += " '" + DateTime.Now.ToString("yyyyMMdd") + "',";
+                            sqlHj += " '" + projectDataF1.Jckssj + "',";
+                            sqlHj += " '" + projectDataF1.Jcjssj + "',";
+                            sqlHj += " '" + jcpj + "',";
+                            sqlHj += " '" + "F1" + "',";
+                            sqlHj += " '" + xmXh.ToString() + "',";
+                            sqlHj += " '" + projectDataF1.Wgjcjyy + "',";
+                            sqlHj += " '" + projectDataF1.Jcxh + "')";
+                            dbHj.ExecuteNonQuery(sqlHj, null);
+                            //直接更新状态吧，0=未检 1=正在检测，2=检测完成 3=上传数据                        
+                            sqlHj = "update LY_Flow_Info set GW_01 ='3' where Lsh ='" + projectDataF1.Hjlsh + "'";
+                        }
+                        //更新状态
+                        int reInt = dbHj.ExecuteNonQuery(sqlHj, null);
+                        if (reInt == 1)
+                        {
+
+                        }
+                        else
+                        {
+                            responseData.Code = "-1";
+                            responseData.Message = "检验项目状态修改失败";
+                        }
+                        //上传检验数据
+
+                        //记录项目开始
+                        if (SaveDetectionProcess("2", projectData, zdbs, dbHj, "Hj"))
+                        {
+                            responseData.Code = "1";
+                            responseData.Message = "SUCCESS";
+                        }
+                        else
+                        {
+                            responseData.Code = "-11";
+                            responseData.Message = "日志记录失败";
+                        }
                     }
                 }
                 responseData.Code = "1";
@@ -1968,11 +1968,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                     sqlStr += " '" + roadTestDataW014.Zcpd + "',"; // ,<data01, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Zcsczm + "',"; // ,<data02, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Lszczdpd + "',"; // ,<data03, varchar(8),>)"
-                    sqlStr += " '" +roadTestDataW014.Zcll  + "',"; // ,<data04, varchar(8),>
+                    sqlStr += " '" + roadTestDataW014.Zcll + "',"; // ,<data04, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Zczdl + "',"; // ,<data05, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Zcpd  + "',"; // ,<data06, varchar(8),>)"
+                    sqlStr += " '" + roadTestDataW014.Zcpd + "',"; // ,<data06, varchar(8),>)"
                     sqlStr += " '" + roadTestDataW014.Zcscfm + "',"; // ,<data07, varchar(8),>)"
-                    sqlStr += " '" +roadTestDataW014.Lsy  + "')";
+                    sqlStr += " '" + roadTestDataW014.Lsy + "')";
 
                     reI = dbAj.ExecuteNonQuery(sqlStr, null);
                 }
@@ -2061,6 +2061,7 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <param name="obj">数据实体类</param>
         /// <param name="zdbs">终端标识 IP地址</param>
         /// <param name="dbUtility">数据库连接</param>
+        /// <param name="ajorhj"></param>
         /// <returns></returns>
         public bool SaveDetectionProcess(string czgc, object obj, string zdbs, DbUtility dbUtility, string ajorhj)
         {
