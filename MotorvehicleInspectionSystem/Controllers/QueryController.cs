@@ -416,11 +416,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id, t1.*";
                         sql += " ,'' as sfmj,'-' as ajywlb ,'-' as zjywlb,t2.Jclb as hjywlb ,t2.JcXm as hjxm ,'-' as Aj_Veh_Type,'-' as Zj_Veh_Type,'-' as Wgchx";
-                        sql += " ,t2.jcdate,t2.jctime,'0' as Zhchzhsh,'' as Zhchzhw,'0' as Zhzhsh,'' as Qdzhw,'0' as SFKZ,t1.YHXZ as Qgs,t1.YYZHDM as rygg,t1.Bz03 as lsdh";
-                        sql += " ,t1.zzxzqh as lxdz,t1.zzg as hpys,t1.bz02 as edzhs,'' as Bzhzhw,'' as Jdchsshlb,'' as Jcxlb,'0' as Qzhsh,'0' as Zhxzhsh,'' as Zjjylb,'' as Yyzhh";
-                        sql += " ,'' as Zjlsh,'' as Dzss,'' as Kqxjzw,t1.hbdbqk as Pfjd,t1.zsxzqh as pqgsh,WRZY as Jqfs,ZJDW as Dws,xzqh as Gyfs,'-' as sjr,t1.Bz03 as Sjrdh,'' as Sjrsfzh";
+                        sql += " ,t2.jcdate,t2.jctime,'0' as Zhchzhsh,'' as Zhchzhw,'0' as Zhzhsh,'' as Qdzhw,'0' as SFKZ,t1.qgs as Qgs,'' as rygg,t1.syr_dh as lsdh";
+                        sql += " ,t1.syr_dz as lxdz,'' as hpys,t1.edzs as edzhs,'' as Bzhzhw,'' as Jdchsshlb,'' as Jcxlb,'0' as Qzhsh,'0' as Zhxzhsh,'' as Zjjylb,'' as Yyzhh";
+                        sql += " ,'' as Zjlsh,'' as Dzss,'' as Kqxjzw,t1.pfbz as Pfjd,t1.pqgsl as pqgsh,jqfs as Jqfs,'' as Dws,gyfs as Gyfs,'-' as sjr,'' as Sjrdh,'' as Sjrsfzh";
                         sql += " ,t2.InBz_01 as Hjdlsj ,t2.lsh as hjlsh,'-' as ajlsh,'0' as Chych,'0' as qdzhsh";
-                        sql += " from BaseInfo_Net t1,LY_Flow_Info t2 where t1.Lsh = t2.Lsh ";
+                        sql += " from BaseInfo_Net2 t1,LY_Flow_Info t2 where t1.Lsh = t2.Lsh ";
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh))
                         {
                             sql += " and t2.Lsh ='" + queryVehicleDetailsR005.Hjlsh.Trim().Replace("'", "").Replace("-", "") + "'";
