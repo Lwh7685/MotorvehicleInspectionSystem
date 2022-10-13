@@ -7,6 +7,7 @@ using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1471,7 +1472,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             sqlInsert += " '',";// ,< bz9, varchar(200),>
                             sqlInsert += " '',";// ,< bz10, varchar(200),>
                             sqlInsert += " '" + projectDataC1.Jcxh + "',";// ,< jcxh, varchar(2),>
-                            sqlInsert += " '" + projectDataC1.Dpjcjyy + "',";// ,< jcry_01, varchar(8),>
+                            sqlInsert += " '" + projectDataC1.Dpjyy + "',";// ,< jcry_01, varchar(8),>
                             sqlInsert += " '" + projectDataC1.Ycy + "')";// ,< jcry_02, varchar(8),>)
                             break;
                         default:
@@ -1517,7 +1518,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 break;
                             case "C1":
                                 projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
-                                statusFlag = UpdateJcxmStatusAj(projectDataC1.Ajlsh, projectDataC1.Jyxm, "3", projectDataC1.Jcxh, projectDataC1.Dpjcjyy, dbAj);
+                                statusFlag = UpdateJcxmStatusAj(projectDataC1.Ajlsh, projectDataC1.Jyxm, "3", projectDataC1.Jcxh, projectDataC1.Dpjyy , dbAj);
                                 break;
                             case "DC":
                                 projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
@@ -2034,6 +2035,53 @@ namespace MotorvehicleInspectionSystem.Controllers
                 {
                     responseData.Code = "-1";
                     responseData.Message = "上线失败：" + reI;
+                }
+
+            }
+            catch (ArgumentNullException)
+            {
+                responseData.Code = "1";
+                responseData.Message = "SUCCESS";
+            }
+            catch (NullReferenceException nre)
+            {
+                responseData.Code = "-2";
+                responseData.Message = "请求数据格式不正确：" + nre.Message;
+            }
+            catch (Exception e)
+            {
+                responseData.Code = "-99";
+                responseData.Message = e.Message;
+            }
+            return saveResults.ToArray();
+        }
+        /// <summary>
+        /// 底盘操作员提示信息的写入
+        /// </summary>
+        /// <param name="requestData"></param>
+        /// <param name="responseData"></param>
+        /// <returns></returns>
+        public SaveResult[] LYYDJKW016(RequestData requestData, ResponseData responseData)
+        {
+            List<SaveResult> saveResults = new List<SaveResult>();
+            try
+            {
+                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                ChassisPromptInformation cPI = JSONHelper.ConvertObject<ChassisPromptInformation>(requestData.Body[0]);
+
+                string sql = string.Format("INSERT INTO [dbo].[tb_DpPromptInformation]([jcxh],[lsh],[hphm],[hpzl],[ycy],[shxs],[xhxs],[xsbz]) VALUES(" +
+                                            "'{0}','{1}','{2}','{3}','{4}','{5}','{6}',{7})",
+                                            cPI.Jcxh ,cPI.Lsh,cPI.Hphm,cPI.Hpzl,cPI.Ycy,cPI.Shxs,cPI.Xhxs ,cPI.Xsbz );
+                int reI = dbAj.ExecuteNonQuery(sql, null);
+                if (reI == 1)
+                {
+                    responseData.Code = "1";
+                    responseData.Message = "SUCCESS";
+                }
+                else
+                {
+                    responseData.Code = "-1";
+                    responseData.Message = "提示失败：" + reI;
                 }
 
             }

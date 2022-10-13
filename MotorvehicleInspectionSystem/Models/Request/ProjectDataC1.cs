@@ -77,7 +77,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 底盘部件检验员
         /// </summary>
         [XmlElement ("dpjcjyy")]
-        public string Dpjcjyy { get; set; }
+        public string Dpjyy { get; set; }
         /// <summary>
         /// 底盘部件检验员身份证
         /// </summary>

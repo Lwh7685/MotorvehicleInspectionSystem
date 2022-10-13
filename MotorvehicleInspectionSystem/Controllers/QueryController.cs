@@ -7,7 +7,6 @@ using MotorvehicleInspectionSystem.Models.Invoice;
 using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
