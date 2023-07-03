@@ -1,5 +1,6 @@
 ﻿using HCNETWebService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Logging;
 using MotorvehicleInspectionSystem.Data;
 using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.ChargePayment;
@@ -24,6 +25,7 @@ namespace MotorvehicleInspectionSystem.Controllers
 {
     public class WriteController : Controller
     {
+        //LoggerHelper loggerHelper = new LoggerHelper();
         /// <summary>
         /// 用户登录
         /// </summary>
@@ -42,21 +44,33 @@ namespace MotorvehicleInspectionSystem.Controllers
                     responseData.Message = "登录地址（IP）不合法";
                     return users.ToArray();
                 }
-                DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = string.Format("select *,STUFF((SELECT ',' + roleDm FROM Tb_UserRole WHERE username =a.UserName  FOR xml path('')),1,1,'') as RoleDm from Tab_UserInfo A where UserName ='{0}' and PassWord ='{1}'", login.UserName, login.PassWord);
-                //判断用户名密码
-                users = db.QueryForList<User>(sql, null);
-                //判断地址
-                sql = string.Format("select * from Tab_User_ZzInfo where SfzInfoID ='{0}' and Zz_IP ='{1}'", users[0].SfzInfoID, login.IP);
-                DataTable dataTable = db.ExecuteDataTable(sql, null);
-                if (dataTable.Rows.Count <= 0)
+                if (VehicleInspectionController.SyAj == "1")
                 {
-                    responseData.Code = "-1";
-                    responseData.Message = "该用户不允许在当前终端登录（" + login.IP + "）";
-                    return new User[0];
+                    DbUtility db = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = string.Format("select *,STUFF((SELECT ',' + roleDm FROM Tb_UserRole WHERE username =a.UserName  FOR xml path('')),1,1,'') as RoleDm from Tab_UserInfo A where UserName ='{0}' and PassWord ='{1}'", login.UserName, login.PassWord);
+                    //判断用户名密码
+                    users = db.QueryForList<User>(sql, null);
+                    //判断地址
+                    //sql = string.Format("select * from Tab_User_ZzInfo where SfzInfoID ='{0}' and Zz_IP ='{1}'", users[0].SfzInfoID, login.IP);
+                    //DataTable dataTable = db.ExecuteDataTable(sql, null);
+                    //if (dataTable.Rows.Count <= 0)
+                    //{
+                    //    responseData.Code = "-1";
+                    //    responseData.Message = "该用户不允许在当前终端登录（" + login.IP + "）";
+                    //    return new User[0];
+                    //}
+                    //else
+                    //{
+                    responseData.Code = "1";
+                    responseData.Message = "SUCCESS";
+                    //}
                 }
-                else
+                if (VehicleInspectionController.SyHj == "1")
                 {
+                    DbUtility db = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    string sql = string.Format("select rysfz as SfzInfoID,GongHao,RyName as username,RyPassWord  as PassWord,RyName as turename,getdate() as AddDate, RyRight as RoleDm from [dbo].[TbSystemUserInfo] where RyName ='{0}'  and RyPassWord ='{1}'", login.UserName, login.PassWord);
+                    //判断用户名密码
+                    users = db.QueryForList<User>(sql, null);
                     responseData.Code = "1";
                     responseData.Message = "SUCCESS";
                 }
@@ -482,6 +496,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         if (VehicleInspectionController.SyHj == "1")
                         {
+                            sql = "";
                             try
                             {
                                 //先删除
@@ -510,6 +525,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             {
                                 saveResult.BcjgHj = "fail";
                                 saveResult.BcsbyyHj = "照片（" + inspectionPhotoW007.Zpdm + "）" + e.Message;
+                                //loggerHelper.Error(this.GetType(), new LogContent("LYYDJKW007", "", "Write", e.Message + "-----" + sql));
                             }
                         }
                         else
@@ -750,7 +766,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         try
                         {
                             BasicHttpBinding binding = new BasicHttpBinding();
-                            EndpointAddress address = new EndpointAddress("http://localhost:8072/HCNETWebService.asmx");
+                            EndpointAddress address = new EndpointAddress("http://192.168.10.100:8096/HCNETWebService.asmx");
                             HCNETWebServiceSoapClient hCNETWebServiceSoapClient = new HCNETWebServiceSoapClient(binding, address);
                             Task<ShutterResponse> shutter = hCNETWebServiceSoapClient.ShutterAsync(photographW009.Jcxh, photographW009.Zpgw, photographW009.Ajlsh, photographW009.Ajjccs.ToString(), photographW009.Hphm, photographW009.Hpzl, photographW009.Clsbdh, photographW009.Jcxm, photographW009.Zpdm, jcyw);
                             string a = shutter.Result.Body.ShutterResult;
@@ -834,6 +850,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     string code;
                     if (ajywlbLw.Contains(projectStartW010.Ajywlb) && systemParameterAj.Jcfs == "1")
                     {
+                        //projectStartW010.Kssj = HttpUtility.UrlEncode(projectStartW010.Kssj, Encoding.UTF8);
                         //序列化为XML
                         string xmlDocStr = XMLHelper.XmlSerializeStr<ProjectStartW010>(projectStartW010);
                         XmlDocument xmlDocument = new XmlDocument();
@@ -841,6 +858,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                         xmlDocument.Save(@"D:\TestXml\" + projectStartW010.Jyxm + "_S.xml");
                         //调用接口
                         string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectStartW010.AjJkxlh, "18C55", xmlDocStr);
+                        //保存日志
+                        TmriOutInterfaceLog tmriOutInterfaceLog = new TmriOutInterfaceLog();
+                        tmriOutInterfaceLog.SendStr = xmlDocStr;
+                        tmriOutInterfaceLog.ReturnStr = resultXml;
+                        tmriOutInterfaceLog.TerminalIp = zdbs;
+                        tmriOutInterfaceLog.Jkid = "18C55";
+                        tmriOutInterfaceLog.KeyInfo = projectStartW010.Ajlsh;
+                        tmriOutInterfaceLog.SaveLog(dbAj);
                         //分析返回结果
                         XmlDocument doc = new XmlDocument();
                         doc.LoadXml(resultXml);
@@ -907,7 +932,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                     int reInt = dbHj.ExecuteNonQuery(sqlHj, null);
                     if (reInt == 1)
                     {
-
+                        responseData.Code = "1";
+                        responseData.Message = "SUCCESS";
                     }
                     else
                     {
@@ -915,20 +941,20 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Message = "检验项目状态修改失败";
                     }
                     //记录项目开始
-                    if (SaveDetectionProcess("1", projectStartW010, zdbs, dbHj, "Hj"))
-                    {
-                        responseData.Code = "1";
-                        responseData.Message = "SUCCESS";
-                    }
-                    else
-                    {
-                        responseData.Code = "-11";
-                        responseData.Message = "日志记录失败";
-                    }
+                    //if (SaveDetectionProcess("1", projectStartW010, zdbs, dbHj, "Hj"))
+                    //{
+                    //    responseData.Code = "1";
+                    //    responseData.Message = "SUCCESS";
+                    //}
+                    //else
+                    //{
+                    //    responseData.Code = "-11";
+                    //    responseData.Message = "日志记录失败";
+                    //}
                 }
 
-                responseData.Code = "1";
-                responseData.Message = "SUCCESS";
+                //responseData.Code = "1";
+                //responseData.Message = "SUCCESS";
             }
             catch (ArgumentNullException)
             {
@@ -970,6 +996,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             string ajjkxlh;
             string sqlDelete;
             string sqlInsert;
+            string ajlsh = "";
             List<string> bhgXm = new List<string>();
             string jcpj = "1";
             try
@@ -990,6 +1017,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         case "NQ":
                             projectDataNQ = JSONHelper.ConvertObject<ProjectDataNQ>(projectData.Jcsj);
+                            ajlsh = projectDataNQ.Ajlsh;
                             ajywlb = projectDataNQ.Ajywlb;
                             projectDataItems = projectDataNQ.Xmlb;
                             ajjkxlh = projectDataNQ.AjJkxlh;
@@ -1054,6 +1082,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             break;
                         case "UC":
                             projectDataUC = JSONHelper.ConvertObject<ProjectDataUC>(projectData.Jcsj);
+                            ajlsh = projectDataUC.Ajlsh;
                             ajywlb = projectDataUC.Ajywlb;
                             projectDataItems = projectDataUC.Xmlb;
                             ajjkxlh = projectDataUC.AjJkxlh;
@@ -1131,6 +1160,8 @@ namespace MotorvehicleInspectionSystem.Controllers
                             break;
                         case "F1":
                             projectDataF1 = JSONHelper.ConvertObject<ProjectDataF1>(projectData.Jcsj);
+                           
+                            ajlsh = projectDataF1.Ajlsh;
                             ajywlb = projectDataF1.Ajywlb;
                             projectDataItems = projectDataF1.XmlbAJ;
                             ajjkxlh = projectDataF1.AjJkxlh;
@@ -1328,12 +1359,13 @@ namespace MotorvehicleInspectionSystem.Controllers
                             break;
                         case "DC":
                             projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
+                            ajlsh = projectDataDC.Ajlsh;
                             ajywlb = projectDataDC.Ajywlb;
-                            projectDataItems = projectDataDC.Xmlb;
                             ajjkxlh = projectDataDC.AjJkxlh;
                             xmlDocStr = XMLHelper.XmlSerializeStr<ProjectDataDC>(projectDataDC);
                             xmlDocument.LoadXml(xmlDocStr);
                             xmlNode = (XmlElement)xmlDocument.SelectSingleNode(".//vehispara");
+                            projectDataItems = projectDataDC.Xmlb;
                             foreach (ProjectDataItem projectDataItem in projectDataItems)
                             {
                                 switch (projectDataItem.Xmdm)
@@ -1401,6 +1433,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             break;
                         case "C1":
                             projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
+                            ajlsh = projectDataC1.Ajlsh;
                             ajywlb = projectDataC1.Ajywlb;
                             projectDataItems = projectDataC1.Xmlb;
                             ajjkxlh = projectDataC1.AjJkxlh;
@@ -1488,6 +1521,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                         xmlDocument.Save(@"D:\TestXml\" + projectData.Jyxm + ".xml");
                         //调用接口
                         string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", ajjkxlh, "18C80", xmlDocStr);
+                        //保存日志
+                        TmriOutInterfaceLog tmriOutInterfaceLog = new TmriOutInterfaceLog();
+                        tmriOutInterfaceLog.SendStr = xmlDocStr;
+                        tmriOutInterfaceLog.ReturnStr = resultXml;
+                        tmriOutInterfaceLog.TerminalIp = zdbs;
+                        tmriOutInterfaceLog.Jkid = "18C80";
+                        tmriOutInterfaceLog.KeyInfo = ajlsh;
+                        tmriOutInterfaceLog.SaveLog(dbAj);
                         //分析返回结果
                         XmlDocument doc = new XmlDocument();
                         doc.LoadXml(resultXml);
@@ -1518,7 +1559,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 break;
                             case "C1":
                                 projectDataC1 = JSONHelper.ConvertObject<ProjectDataC1>(projectData.Jcsj);
-                                statusFlag = UpdateJcxmStatusAj(projectDataC1.Ajlsh, projectDataC1.Jyxm, "3", projectDataC1.Jcxh, projectDataC1.Dpjyy , dbAj);
+                                statusFlag = UpdateJcxmStatusAj(projectDataC1.Ajlsh, projectDataC1.Jyxm, "3", projectDataC1.Jcxh, projectDataC1.Dpjyy, dbAj);
                                 break;
                             case "DC":
                                 projectDataDC = JSONHelper.ConvertObject<ProjectDataDC>(projectData.Jcsj);
@@ -1576,7 +1617,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     }
                     if (hjywlb != "-")
                     {
-                       
+
                         //保存数据
                         if (projectData.Jyxm == "F1")
                         {
@@ -1590,8 +1631,15 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 {
                                     jcpj = "-1";
                                 }
+                                //不合格项目
+                                if (projectDataItem.Xmpj == "2")
+                                {
+                                    bhgXm.Add(projectDataItem.Xmdm + "," + projectDataItem.Xmbz);
+                                }
                             }
-                            sqlHj = "INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC])VALUES (";
+
+                            sqlDelete = "delete from [dbo].[JcDate_Work_JC] where lsh ='" + projectDataF1.Hjlsh + "' and jccs ='" + projectDataF1.Hjjccs + "' and dalb ='F1'";
+                            sqlHj = "INSERT INTO [dbo].[JcDate_Work_JC]([Lsh] ,[hpzl] ,[hphm],[Jccs],[JcDate],[KsTime],[JsTime],[JcPj],[DaLB],[WorkJcxm],[WorkMan],[TD_JC],InBz_01)VALUES (";
                             sqlHj += " '" + projectDataF1.Hjlsh + "',";
                             sqlHj += " '" + projectDataF1.Hpzl + "',";
                             sqlHj += " '" + projectDataF1.Hphm + "',";
@@ -1603,7 +1651,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                             sqlHj += " '" + "F1" + "',";
                             sqlHj += " '" + xmXh.ToString() + "',";
                             sqlHj += " '" + projectDataF1.Wgjcjyy + "',";
-                            sqlHj += " '" + projectDataF1.Jcxh + "')";
+                            sqlHj += " '" + projectDataF1.Jcxh + "',";
+                            sqlHj += " '" + String.Join(";", bhgXm.ToArray()) + "')";
+                            dbHj.ExecuteNonQuery(sqlDelete, null);
                             dbHj.ExecuteNonQuery(sqlHj, null);
                             //直接更新状态吧，0=未检 1=正在检测，2=检测完成 3=上传数据                        
                             sqlHj = "update LY_Flow_Info set GW_01 ='3' where Lsh ='" + projectDataF1.Hjlsh + "'";
@@ -1621,17 +1671,17 @@ namespace MotorvehicleInspectionSystem.Controllers
                         }
                         //上传检验数据
 
-                        //记录项目开始
-                        if (SaveDetectionProcess("2", projectData, zdbs, dbHj, "Hj"))
-                        {
-                            responseData.Code = "1";
-                            responseData.Message = "SUCCESS";
-                        }
-                        else
-                        {
-                            responseData.Code = "-11";
-                            responseData.Message = "日志记录失败";
-                        }
+                        ////记录项目开始
+                        //if (SaveDetectionProcess("2", projectData, zdbs, dbHj, "Hj"))
+                        //{
+                        //    responseData.Code = "1";
+                        //    responseData.Message = "SUCCESS";
+                        //}
+                        //else
+                        //{
+                        //    responseData.Code = "-11";
+                        //    responseData.Message = "日志记录失败";
+                        //}
                     }
                 }
                 responseData.Code = "1";
@@ -1693,6 +1743,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                     if (systemParameterAj.Jcfs == "1" && ajywlbLw.Contains(projectEndW012.Ajywlb))
                     {
                         string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", projectEndW012.AjJkxlh, "18C58", xmlDocStr);
+                        //保存日志
+                        TmriOutInterfaceLog tmriOutInterfaceLog = new TmriOutInterfaceLog();
+                        tmriOutInterfaceLog.SendStr = xmlDocStr;
+                        tmriOutInterfaceLog.ReturnStr = resultXml;
+                        tmriOutInterfaceLog.TerminalIp = zdbs;
+                        tmriOutInterfaceLog.Jkid = "18C58";
+                        tmriOutInterfaceLog.KeyInfo = projectEndW012.Ajlsh;
+                        tmriOutInterfaceLog.SaveLog(dbAj);
                         //分析返回结果
                         XmlDocument doc = new XmlDocument();
                         doc.LoadXml(resultXml);
@@ -1756,24 +1814,25 @@ namespace MotorvehicleInspectionSystem.Controllers
                     int reInt = dbHj.ExecuteNonQuery(sqlHj, null);
                     if (reInt == 1)
                     {
-
+                        responseData.Code = "1";
+                        responseData.Message = "SUCCESS";
                     }
                     else
                     {
                         responseData.Code = "-1";
                         responseData.Message = "检验项目状态修改失败";
                     }
-                    //记录项目开始
-                    if (SaveDetectionProcess("3", projectEndW012, zdbs, dbHj, "Hj"))
-                    {
-                        responseData.Code = "1";
-                        responseData.Message = "SUCCESS";
-                    }
-                    else
-                    {
-                        responseData.Code = "-11";
-                        responseData.Message = "日志记录失败";
-                    }
+                    ////记录项目开始
+                    //if (SaveDetectionProcess("3", projectEndW012, zdbs, dbHj, "Hj"))
+                    //{
+                    //    responseData.Code = "1";
+                    //    responseData.Message = "SUCCESS";
+                    //}
+                    //else
+                    //{
+                    //    responseData.Code = "-11";
+                    //    responseData.Message = "日志记录失败";
+                    //}
                 }
             }
             catch (ArgumentNullException)
@@ -1919,6 +1978,11 @@ namespace MotorvehicleInspectionSystem.Controllers
                 var sqlStr = "";
                 if (roadTestDataW014.Jyxm.Contains("R1"))
                 {
+                    var zcpj = "○";
+                    if (roadTestDataW014.Lsjg == "0")
+                    {
+                        zcpj = "×";
+                    }
                     sqlStr = string.Format("delete from JcData_R where lsh='{0}' and jccs='{1}' and dalb ='{2}'", roadTestDataW014.Ajlsh, roadTestDataW014.Ajjccs, "R1");
                     int reI = dbAj.ExecuteNonQuery(sqlStr, null);
                     sqlStr = "INSERT INTO [dbo].[JcData_R]";
@@ -1931,9 +1995,9 @@ namespace MotorvehicleInspectionSystem.Controllers
                     sqlStr += " '" + roadTestDataW014.Ajjccs + "',"; // ,<jccs, int,>
                     sqlStr += " '" + "R1" + "',"; // ,<dalb, varchar(8),>
                     sqlStr += " '" + DateTime.Now.Date.ToString() + "',"; // ,<jcdate, date,>
-                    sqlStr += " '" + "" + "',"; // ,<kstime, datetime,>
-                    sqlStr += " '" + "" + "',"; // ,<jstime, datetime,>
-                    sqlStr += " '" + roadTestDataW014.Lsjg + "',"; // ,<jcpj, varchar(2),>
+                    sqlStr += " '" + roadTestDataW014.Jckssj + "',"; // ,<kstime, datetime,>
+                    sqlStr += " '" + roadTestDataW014.Jcjssj + "',"; // ,<jstime, datetime,>
+                    sqlStr += " '" + zcpj + "',"; // ,<jcpj, varchar(2),>
                     sqlStr += " '" + roadTestDataW014.Lstdkd + "',"; // ,<data01, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Zdcsd + "',"; // ,<data02, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Xckzzdjl + "',"; // ,<data03, varchar(8),>
@@ -1942,45 +2006,92 @@ namespace MotorvehicleInspectionSystem.Controllers
                     sqlStr += " '" + "≤" + roadTestDataW014.ZdjlBz + "',"; // ,<data06, varchar(8),>
                     sqlStr += " '" + "≥" + roadTestDataW014.MFDDBz + "',"; // ,<data07, varchar(8),>
                     sqlStr += " '" + roadTestDataW014.Zdwdx + "',"; // ,<data08, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.ZdjlPj + "',"; // ,<data09, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.XtsjPj + "',"; // ,<data10, varchar(8),>
+                    sqlStr += " '" + (roadTestDataW014.ZdjlPj == "1" ? "○" : "×") + "',"; // ,<data09, varchar(8),>
+                    sqlStr += " '" + (roadTestDataW014.XtsjPj == "1" ? "○" : "×") + "',"; // ,<data10, varchar(8),>
                     sqlStr += " '" + "≤" + roadTestDataW014.XtsjBz + "',"; // ,<data11, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.MFDDPj + "',"; // ,<data12, varchar(8),>)"
+                    sqlStr += " '" + (roadTestDataW014.MFDDPj == "1" ? "○" : "×") + "',"; // ,<data12, varchar(8),>)"
                     sqlStr += " '" + roadTestDataW014.Lsy + "')";
                     reI = dbAj.ExecuteNonQuery(sqlStr, null);
                 }
                 if (roadTestDataW014.Jyxm.Contains("R2"))
                 {
+                    var zcqk = "不溜坡";
+                    var zcpj = "○";
+                    if (roadTestDataW014.Lszczdpd == "不合格")
+                    {
+                        zcqk = "溜坡";
+                        zcpj = "×";
+                    }
                     sqlStr = string.Format("delete from JcData_R where lsh='{0}' and jccs='{1}' and dalb ='{2}'", roadTestDataW014.Ajlsh, roadTestDataW014.Ajjccs, "R2");
                     int reI = dbAj.ExecuteNonQuery(sqlStr, null);
-
-                    sqlStr = "INSERT INTO [dbo].[JcData_R]";
-                    sqlStr += " ([lsh],[hpzl],[hphm],[jccs],[dalb],[jcdate],[kstime],[jstime]";
-                    sqlStr += " ,[jcpj],[data01],[data02],[data03],[data04],[data05],[data06],[data07],bz1) VALUES( ";
-                    sqlStr += " '" + roadTestDataW014.Ajlsh + "',"; // (<lsh, varchar(17),>
-                    sqlStr += " '" + roadTestDataW014.Hpzl + "',"; // ,<hpzl, varchar(2),>
-                    sqlStr += " '" + roadTestDataW014.Hphm + "',"; // ,<hphm, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Ajjccs + "',"; // ,<jccs, int,>
-                    sqlStr += " '" + "R2" + "',"; // ,<dalb, varchar(8),>
-                    sqlStr += " '" + DateTime.Now.Date.ToString() + "',"; // ,<jcdate, date,>
-                    sqlStr += " '" + "" + "',"; // ,<kstime, datetime,>
-                    sqlStr += " '" + "" + "',"; // ,<jstime, datetime,>
-                    sqlStr += " '" + roadTestDataW014.Lszczdpd + "',"; // ,<jcpj, varchar(2),>
-                    sqlStr += " '" + roadTestDataW014.Zcpd + "',"; // ,<data01, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Zcsczm + "',"; // ,<data02, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Lszczdpd + "',"; // ,<data03, varchar(8),>)"
-                    sqlStr += " '" + roadTestDataW014.Zcll + "',"; // ,<data04, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Zczdl + "',"; // ,<data05, varchar(8),>
-                    sqlStr += " '" + roadTestDataW014.Zcpd + "',"; // ,<data06, varchar(8),>)"
-                    sqlStr += " '" + roadTestDataW014.Zcscfm + "',"; // ,<data07, varchar(8),>)"
-                    sqlStr += " '" + roadTestDataW014.Lsy + "')";
-
+                    if (roadTestDataW014.Zczdcsff == "1")
+                    {
+                        sqlStr = "INSERT INTO [dbo].[JcData_R]";
+                        sqlStr += " ([lsh],[hpzl],[hphm],[jccs],[dalb],[jcdate],[kstime],[jstime]";
+                        sqlStr += " ,[jcpj],[data01],[data02],[data03],[data04],[data05],bz1) VALUES( ";
+                        sqlStr += " '" + roadTestDataW014.Ajlsh + "',"; // (<lsh, varchar(17),>
+                        sqlStr += " '" + roadTestDataW014.Hpzl + "',"; // ,<hpzl, varchar(2),>
+                        sqlStr += " '" + roadTestDataW014.Hphm + "',"; // ,<hphm, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Ajjccs + "',"; // ,<jccs, int,>
+                        sqlStr += " '" + "R2" + "',"; // ,<dalb, varchar(8),>
+                        sqlStr += " '" + DateTime.Now.Date.ToString() + "',"; // ,<jcdate, date,>
+                        sqlStr += " '" + roadTestDataW014.Jckssj + "',"; // ,<kstime, datetime,>
+                        sqlStr += " '" + roadTestDataW014.Jcjssj + "',"; // ,<jstime, datetime,>
+                        sqlStr += " '" + zcpj + "',"; // ,<jcpj, varchar(2),>
+                        sqlStr += " '" + roadTestDataW014.Zcpd + "',"; // ,<data01, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Zcsczm + "',"; // ,<data02, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Zcscfm + "',"; // ,<data03, varchar(8),>)"
+                        sqlStr += " '" + zcqk + "',"; // ,<data04, varchar(8),>
+                        sqlStr += " '1',"; // ,<data05, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Lsy + "')";
+                    }
+                    else
+                    {
+                        sqlStr = "INSERT INTO [dbo].[JcData_R]";
+                        sqlStr += " ([lsh],[hpzl],[hphm],[jccs],[dalb],[jcdate],[kstime],[jstime]";
+                        sqlStr += " ,[jcpj],[data01],[data02],[data03],[data04],[data05],[data06],[data07],bz1) VALUES( ";
+                        sqlStr += " '" + roadTestDataW014.Ajlsh + "',"; // (<lsh, varchar(17),>
+                        sqlStr += " '" + roadTestDataW014.Hpzl + "',"; // ,<hpzl, varchar(2),>
+                        sqlStr += " '" + roadTestDataW014.Hphm + "',"; // ,<hphm, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Ajjccs + "',"; // ,<jccs, int,>
+                        sqlStr += " '" + "R2" + "',"; // ,<dalb, varchar(8),>
+                        sqlStr += " '" + DateTime.Now.Date.ToString() + "',"; // ,<jcdate, date,>
+                        sqlStr += " '" + roadTestDataW014.Jckssj + "',"; // ,<kstime, datetime,>
+                        sqlStr += " '" + roadTestDataW014.Jcjssj + "',"; // ,<jstime, datetime,>
+                        sqlStr += " '" + zcpj + "',"; // ,<jcpj, varchar(2),>
+                        sqlStr += " '" + roadTestDataW014.Zcsczm + "',"; // ,<data01, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Zcll + "',"; // ,<data02, varchar(8),>
+                        sqlStr += " '" + roadTestDataW014.Zcscfm + "',"; // ,<data03, varchar(8),>)"
+                        sqlStr += " '" + roadTestDataW014.Zcllfm + "',"; // ,<data04, varchar(8),>
+                        sqlStr += " '2',"; // ,<data05, varchar(8),>
+                        sqlStr += " '" + zcqk + "',"; // ,<data06, varchar(8),>)"
+                        sqlStr += " '" + roadTestDataW014.Llbzxz + "',"; // ,<data07, varchar(8),>)"
+                        sqlStr += " '" + roadTestDataW014.Lsy + "')";
+                    }
                     reI = dbAj.ExecuteNonQuery(sqlStr, null);
                 }
                 string[] ajywlbLw = new string[] { "00", "01", "02", "03", "04" };
                 if (systemParameterAj.Jcfs == "1" && ajywlbLw.Contains(roadTestDataW014.Ajywlb))
                 {
-
+                    //开始上传到平台
+                    //先将类序列化为xml
+                    string xmlDocStr = XMLHelper.XmlSerializeStr<RoadTestDataW014>(roadTestDataW014);
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(xmlDocStr);
+                    xmlDocument.Save(@"D:\TestXml\" + roadTestDataW014.Jyxm + "_D.xml");
+                    string resultXml = CallingSecurityInterface.WriteObjectOutNew("18", null, "18C54", xmlDocStr);
+                    //保存日志
+                    TmriOutInterfaceLog tmriOutInterfaceLog = new TmriOutInterfaceLog();
+                    tmriOutInterfaceLog.SendStr = xmlDocStr;
+                    tmriOutInterfaceLog.ReturnStr = resultXml;
+                    tmriOutInterfaceLog.TerminalIp = zdbs;
+                    tmriOutInterfaceLog.Jkid = "18C54";
+                    tmriOutInterfaceLog.KeyInfo = roadTestDataW014.Ajlsh;
+                    tmriOutInterfaceLog.SaveLog(dbAj);
+                    //分析返回结果
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml(resultXml);
+                    var code = XMLHelper.GetNodeValue(doc, "code");
                 }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
@@ -2071,7 +2182,7 @@ namespace MotorvehicleInspectionSystem.Controllers
 
                 string sql = string.Format("INSERT INTO [dbo].[tb_DpPromptInformation]([jcxh],[lsh],[hphm],[hpzl],[ycy],[shxs],[xhxs],[xsbz]) VALUES(" +
                                             "'{0}','{1}','{2}','{3}','{4}','{5}','{6}',{7})",
-                                            cPI.Jcxh ,cPI.Lsh,cPI.Hphm,cPI.Hpzl,cPI.Ycy,cPI.Shxs,cPI.Xhxs ,cPI.Xsbz );
+                                            cPI.Jcxh, cPI.Lsh, cPI.Hphm, cPI.Hpzl, cPI.Ycy, cPI.Shxs, cPI.Xhxs, cPI.Xsbz);
                 int reI = dbAj.ExecuteNonQuery(sql, null);
                 if (reI == 1)
                 {
@@ -2250,6 +2361,7 @@ namespace MotorvehicleInspectionSystem.Controllers
             }
             catch
             {
+                
                 return false;
             }
         }
@@ -2288,6 +2400,14 @@ namespace MotorvehicleInspectionSystem.Controllers
                 else
                 {
                     dictionary[jcxm] = status;//含则改
+                                              //if (jcxm =="R1")
+                                              //{
+                                              //    if (dictionary.ContainsKey("R2"))
+                                              //    {
+                                              //        dictionary["R2"] = status;
+                                              //    }
+
+                    //}
                 }
                 StringBuilder jcxmZtSB = new StringBuilder();
                 foreach (var item in dictionary)
@@ -2336,6 +2456,17 @@ namespace MotorvehicleInspectionSystem.Controllers
                         if (!string.IsNullOrEmpty(jyy))
                         {
                             sql += ",Ry_04='" + jyy + "'";
+                        }
+                        break;
+                    case "R1":
+                        sql = sql + " jyxmstatus='" + jcxmZtSB.ToString() + "',lszdstatus = '" + status + "'";
+                        if (!string.IsNullOrEmpty(jcxh))
+                        {
+                            sql += ",Man_TD_LS='" + jcxh + "'";
+                        }
+                        if (!string.IsNullOrEmpty(jyy))
+                        {
+                            sql += ",Ry_06='" + jyy + "'";
                         }
                         break;
                     default:

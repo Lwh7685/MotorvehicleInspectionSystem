@@ -43,7 +43,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     {
                         objFile.CopyTo(filesStream);
                         filesStream.Flush();
-                        return "1"+path + aa;
+                        return "1"+ path + aa;
                     }
                 }
                 else

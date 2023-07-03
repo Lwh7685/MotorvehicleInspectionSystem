@@ -14,16 +14,16 @@ namespace MotorvehicleInspectionSystem.Tools
     /// </summary>
     public class CallingSecurityInterface
     {
-        public static string WriteObjectOutNew(string xtlb, string jkxlh, string jkid, string xmlDocStr)
+        public static string WriteObjectOutNew(string xtlb, string? jkxlh, string jkid, string xmlDocStr)
         {
             //xml转为UTF8
-            xmlDocStr = HttpUtility.UrlEncode(xmlDocStr, Encoding.UTF8);
+            //xmlDocStr = HttpUtility.UrlEncode(xmlDocStr, Encoding.UTF8);
             BasicHttpBinding binding = new BasicHttpBinding();
-            EndpointAddress address = new EndpointAddress("http://localhost:8072/HCNETWebService.asmx");
+            EndpointAddress address = new EndpointAddress("http://192.168.10.100:8096/TmriOutNewAccess.asmx");
             //连接服务
             TmriOutNewAccessSoapClient tmriOutNewAccessSoapClient = new TmriOutNewAccessSoapClient(binding, address);
             //调用接口
-            Task<writeObjectOutNewResponse> writeObjectOutNew = tmriOutNewAccessSoapClient.writeObjectOutNewAsync(xtlb, jkxlh, jkid, "", "", "", "", "", "", xmlDocStr);
+            Task<writeObjectOutNewResponse> writeObjectOutNew = tmriOutNewAccessSoapClient.writeObjectOutNewAsync(xtlb, jkxlh, jkid, "111111111111111111", "111111111111", "000000", "000000", "000000", "192.168.10.100", xmlDocStr);
             //获取返回值
             string result = writeObjectOutNew.Result.Body.writeObjectOutNewResult;
             //解码UTF8

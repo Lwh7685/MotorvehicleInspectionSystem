@@ -1,13 +1,19 @@
-﻿using MotorvehicleInspectionSystem.Models;
+﻿using Microsoft.Extensions.FileSystemGlobbing.Internal;
+using Microsoft.Extensions.FileSystemGlobbing;
+using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.Request;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
+using System.Web;
 
 namespace MotorvehicleInspectionSystem.Tools
 {
@@ -21,17 +27,50 @@ namespace MotorvehicleInspectionSystem.Tools
         /// <returns></returns>
         public static string XmlSerialize<T>(T obj)
         {
-            using (System.IO.StringWriter sw = new Utf8StringWriter())
+            //using (System.IO.StringWriter sw = new Utf8StringWriter())
+            //{
+            //    //Type t = obj.GetType();
+            //    XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            //    ////不要命名空间
+            //    ns.Add(string.Empty, string.Empty);
+            //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(obj.GetType());
+            //    serializer.Serialize(sw, obj, ns);
+            //    sw.Close();
+            //    return sw.ToString();
+            //}
+            string OutputXmlString = "";
+            using (MemoryStream ms = new MemoryStream())
             {
-                //Type t = obj.GetType();
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ////不要命名空间
-                ns.Add(string.Empty, string.Empty);
-                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(obj.GetType());
-                serializer.Serialize(sw, obj, ns);
-                sw.Close();
-                return sw.ToString();
+                var setting = new XmlWriterSettings()
+                {
+                    Encoding = new UTF8Encoding(),
+                    Indent = true,
+                };
+                using (XmlWriter writer = XmlWriter.Create(ms, setting))
+                {
+                    XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                    ////不要命名空间
+                    ns.Add(string.Empty, string.Empty);
+                    XmlSerializer xmlSearializer = new XmlSerializer(obj.GetType());
+                    xmlSearializer.Serialize(writer, obj, ns);
+                    OutputXmlString = Encoding.UTF8.GetString(ms.ToArray());
+                }
             }
+            StringBuilder ss = new StringBuilder();
+            char[] c = OutputXmlString.ToCharArray();
+            for (int i = 0; i < c.Length; i++)
+            {
+
+                if ((c[i] >= 0x4e00 && c[i] <= 0x9fbb))//|| c[i] == 0x0020 || c[i] == 0x00A0 || c[i] == 0x3000
+                {
+                    ss.Append(HttpUtility.UrlEncode(c[i].ToString(), Encoding.UTF8));
+                }
+                else
+                    ss.Append(c[i]);
+
+            }
+            return ss.ToString();
+
         }
         /// <summary>
         /// XML转实体类
@@ -55,15 +94,15 @@ namespace MotorvehicleInspectionSystem.Tools
                 return null;
             }
         }
-        
 
 
-        public static string XmlSerializeStr<T>(T obj, string jklb="Write")
+
+        public static string XmlSerializeStr<T>(T obj, string jklb = "Write")
         {
             try
             {
-                Root r = new Root();
-                if(jklb == "Write")
+                Root<T> r = new Root<T>();
+                if (jklb == "Write")
                 {
                     r.vehispara = obj;
                 }
@@ -72,11 +111,11 @@ namespace MotorvehicleInspectionSystem.Tools
                     r.QueryCondition = obj;
                 }
                 //转换
-                string strrxml = XmlSerialize<Root>(r);
+                string strrxml = XmlSerialize<Root<T>>(r);
                 //返回
                 return strrxml;
             }
-            catch 
+            catch
             {
                 return null;
             }
@@ -102,7 +141,7 @@ namespace MotorvehicleInspectionSystem.Tools
             if (xmlnode == null)
                 return defaultValue;
             else
-                return xmlnode.InnerXml ;
+                return xmlnode.InnerXml;
         }
         /// <summary>
         /// 添加节点
@@ -120,24 +159,25 @@ namespace MotorvehicleInspectionSystem.Tools
         }
     }
     //注意！body类的vehispara的类型是dynamic 所以需要使用XmlInclude表示body可以解析的类型
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectStartW010))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectEndW012))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataNQ))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataUC))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataF1))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataDC))]
-    [System.Xml.Serialization.XmlInclude(typeof(ProjectDataC1))]
-    [System.Xml.Serialization.XmlInclude(typeof(NetworkQueryR022 ))]
-    [XmlInclude(typeof(VehicleDetails))]
-    
-    public partial class Root
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectStartW010))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectEndW012))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectDataNQ))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectDataUC))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectDataF1))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectDataDC))]
+    //[System.Xml.Serialization.XmlInclude(typeof(ProjectDataC1))]
+    //[System.Xml.Serialization.XmlInclude(typeof(NetworkQueryR022))]
+    //[XmlInclude(typeof(VehicleDetails))]
+
+    [XmlRoot ("root")]
+    public partial class Root<T>
     {
-        public dynamic vehispara { get; set; }//接受动态业务类型 
+        public T vehispara { get; set; }//接受动态业务类型 
         public dynamic QueryCondition { get; set; }
     }
     public class Utf8StringWriter : StringWriter
     {
         public override Encoding Encoding => Encoding.UTF8;
     }
-    
+
 }

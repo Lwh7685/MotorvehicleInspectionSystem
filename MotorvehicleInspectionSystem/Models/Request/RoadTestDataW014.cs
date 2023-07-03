@@ -21,7 +21,7 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// <summary>
         /// 安检业务类别
         /// </summary>
-        [XmlIgnore ]
+        [XmlIgnore]
         public string Ajywlb { get; set; }
         /// <summary>
         /// 检验机构编号
@@ -61,32 +61,32 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// <summary>
         /// 路试员姓名
         /// </summary>
-        [XmlElement ("lsy")]
+        [XmlElement("lsy")]
         public string Lsy { get; set; }
         /// <summary>
         /// 行车制动初速度
         /// </summary>
-        [XmlElement ("zdcsd")]
+        [XmlElement("zdcsd")]
         public string Zdcsd { get; set; }
         /// <summary>
         /// 行车制动协调时间
         /// </summary>
-        [XmlElement ("zdxtsj")]
+        [XmlElement("zdxtsj")]
         public string Zdxtsj { get; set; }
         /// <summary>
         /// 行车制动稳定性
         /// </summary>
-        [XmlElement ("zdwdx")]
+        [XmlElement("zdwdx")]
         public string Zdwdx { get; set; }
         /// <summary>
         /// 行车空载制动距离
         /// </summary>
-        [XmlElement ("xckzzdjl")]
+        [XmlElement("xckzzdjl")]
         public string Xckzzdjl { get; set; }
         /// <summary>
         /// 行车满载制动制动距离
         /// </summary>
-        [XmlElement ("xcmzzdjl")]
+        [XmlElement("xcmzzdjl")]
         public string Xcmzzdjl { get; set; }
         /// <summary>
         /// 行车空载制动MFDD
@@ -96,67 +96,67 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// <summary>
         /// 行车满载制动MFDD
         /// </summary>
-        [XmlElement ("xcmzmfdd")]
+        [XmlElement("xcmzmfdd")]
         public string Xcmzmfdd { get; set; }
         /// <summary>
         /// 行车制动踏板力值
         /// </summary>
-        [XmlElement ("xczdczlz")]
+        [XmlElement("xczdczlz")]
         public string Xczdczlz { get; set; }
         /// <summary>
         /// 行车路试制动判定
         /// </summary>
-        [XmlElement ("lszdpd")]
+        [XmlElement("lszdpd")]
         public string Lszdpd { get; set; }
         /// <summary>
         /// 应急制动初速度
         /// </summary>
-       [XmlElement ("yjzdcsd")]
+        [XmlElement("yjzdcsd")]
         public string Yjzdcsd { get; set; }
         /// <summary>
         /// 应急空载制动距离
         /// </summary>
-        [XmlElement ("yjkzzdjl")]
+        [XmlElement("yjkzzdjl")]
         public string Yjkzzdjl { get; set; }
         /// <summary>
         /// 应急空载 MFDD
         /// </summary>
-       [XmlElement ("yjkzmfdd")]
+        [XmlElement("yjkzmfdd")]
         public string Yjkzmfdd { get; set; }
         /// <summary>
         /// 应急满载制动距离
         /// </summary>
-        [XmlElement ("yjmzzdjl")]
+        [XmlElement("yjmzzdjl")]
         public string Yjmzzdjl { get; set; }
         /// <summary>
         /// 应急满载 MFDD
         /// </summary>
-        [XmlElement ("yjmzmfdd")]
+        [XmlElement("yjmzmfdd")]
         public string Yjmzmfdd { get; set; }
         /// <summary>
         /// 应急操纵力方式
         /// </summary>
-        [XmlElement ("yjzdczlfs")]
+        [XmlElement("yjzdczlfs")]
         public string Yjzdczlfs { get; set; }
         /// <summary>
         /// 应急操纵力值
         /// </summary>
-        [XmlElement ("yjzdczlz")]
+        [XmlElement("yjzdczlz")]
         public string Yjzdczlz { get; set; }
         /// <summary>
         /// 应急路试制动判定
         /// </summary>
-        [XmlElement ("yjzdpd")]
+        [XmlElement("yjzdpd")]
         public string Yjzdpd { get; set; }
         /// <summary>
         /// 驻车坡度
         /// </summary>
-        [XmlElement ("zcpd")]
+        [XmlElement("zcpd")]
         public string Zcpd { get; set; }
         /// <summary>
         /// 路试驻车制动判定
         /// </summary>
-        [XmlElement ("lszczdpd")]
+        [XmlElement("lszczdpd")]
         public string Lszczdpd { get; set; }
         /// <summary>
         /// 路试结果
@@ -167,32 +167,37 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// 驻车拉力
         /// </summary>
         [XmlIgnore]
-        public int  Zcll { get; set; }
+        public string Zcll { get; set; }
+        /// <summary>
+        /// 驻车拉力反面
+        /// </summary>
+        [XmlIgnore]
+        public string Zcllfm { get; set; }
         /// <summary>
         /// 整备质量
         /// </summary>
-        [XmlIgnore ]
-        public int Zbzl { get; set; }
+        [XmlIgnore]
+        public string Zbzl { get; set; }
         /// <summary>
         /// 驻车制动率
         /// </summary>
-        [XmlIgnore ]
-        public double  Zczdl { get; set; }
+        [XmlIgnore]
+        public double Zczdl { get; set; }
         /// <summary>
         /// 驻车时长正面 单位 s
         /// </summary>
-        [XmlIgnore ]
-        public int Zcsczm { get; set; }
+        [XmlIgnore]
+        public string Zcsczm { get; set; }
         /// <summary>
         /// 驻车时长反面 单位 s
         /// </summary>
         [XmlIgnore]
-        public int Zcscfm { get; set; }
+        public string Zcscfm { get; set; }
         /// <summary>
         /// 驻车时长 单位 分钟
         /// </summary>
-        [XmlIgnore ]
-        public double  Zcsc { get; set; }
+        [XmlIgnore]
+        public double Zcsc { get; set; }
         /// <summary>
         /// 制动距离标准限值
         /// </summary>
@@ -202,17 +207,17 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// MFDD标准限值
         /// </summary>
         [XmlIgnore]
-        public double  MFDDBz { get; set; }
+        public double MFDDBz { get; set; }
         /// <summary>
         /// 协调时间标准限值
         /// </summary>
-        [XmlIgnore ]
+        [XmlIgnore]
         public double XtsjBz { get; set; }
         /// <summary>
         /// 路试通道宽度
         /// </summary>
-        [XmlIgnore ]
-        public double  Lstdkd { get; set; }
+        [XmlIgnore]
+        public double Lstdkd { get; set; }
         /// <summary>
         /// 制动距离评价
         /// </summary>
@@ -228,5 +233,24 @@ namespace MotorvehicleInspectionSystem.Models.Request
         /// </summary>
         [XmlIgnore]
         public string XtsjPj { get; set; }
+        /// <summary>
+        /// 行车制动测试方法 MFDD=2、制动距离=1
+        /// </summary>
+        [XmlIgnore]
+        public string Xczdcsff { get; set; }
+        /// <summary>
+        /// 驻车制动测试方法  坡道=1  拉力计=2
+        /// </summary>
+        [XmlIgnore]
+        public string Zczdcsff { get; set; }
+        /// <summary>
+        /// 拉力标准限值
+        /// </summary>
+        [XmlIgnore]
+        public string Llbzxz { get; set; }
+        [XmlIgnore]
+        public string Jckssj { get; set; }
+        [XmlIgnore]
+        public string Jcjssj { get; set; }
     }
 }

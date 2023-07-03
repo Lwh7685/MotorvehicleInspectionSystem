@@ -1,7 +1,7 @@
 {
   "ExtendedData": {
     "inputs": [
-      "http://localhost:8072/TmriOutNewAccess.asmx"
+      "http://192.168.10.100:8096/TmriOutNewAccess.asmx"
     ],
     "collectionTypes": [
       "System.Array",

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MotorvehicleInspectionSystem.Data;
-using MotorvehicleInspectionSystem.Log;
 using MotorvehicleInspectionSystem.Models;
 using MotorvehicleInspectionSystem.Models.ChargePayment;
 using MotorvehicleInspectionSystem.Models.Invoice;
@@ -9,6 +8,8 @@ using MotorvehicleInspectionSystem.Models.Request;
 using MotorvehicleInspectionSystem.Models.Response;
 using MotorvehicleInspectionSystem.Tools;
 using Newtonsoft.Json;
+using NLog;
+using NLog.Fluent;
 using System;
 using System.Collections.Generic; 
 using System.IO;
@@ -24,7 +25,8 @@ namespace MotorvehicleInspectionSystem.Controllers
     [ApiController]
     public class VehicleInspectionController : ControllerBase
     {
-        LoggerHelper loggerHelper = new LoggerHelper();
+        //LoggerHelper loggerHelper = new LoggerHelper();
+        private static Logger nLogger = LogManager.GetCurrentClassLogger();
         /// <summary>
         /// 使用安检数据库
         /// </summary>
@@ -75,7 +77,8 @@ namespace MotorvehicleInspectionSystem.Controllers
         /// <returns></returns>
         [HttpPost]
         public ActionResult<object> Query(string jkId, string zdbs, string jsonData)
-        {
+        {          
+            nLogger.Error (jsonData);
             responseData.Body = new object[0];
             try
             {
@@ -101,7 +104,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     responseData.Message = "终端标识（zdbs）不合法";
                     return responseData;
                 }
-                loggerHelper.Info(this.GetType(),new LogContent(jkId, zdbs , "Query", jsonData));
+                //loggerHelper.Info(this.GetType(),new LogContent(jkId, zdbs , "Query", jsonData));
                 //jsonData合法
                 requestData = JSONHelper.DeserializeJson<RequestData>(jsonData);
                 switch (jkId)
@@ -220,19 +223,19 @@ namespace MotorvehicleInspectionSystem.Controllers
             {
                 responseData.Code = "-8";
                 responseData.Message = "参数不能为空";
-                loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
+                //loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
             }
             catch (JsonSerializationException ex)
             {
                 responseData.Code = "-2";
                 responseData.Message = "数据格式不规范（jsonData）";
-                loggerHelper.Error (this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData),ex);
+                //loggerHelper.Error (this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData),ex);
             }
             catch (Exception ex)
             {
                 responseData.Code = "-2";
                 responseData.Message = "发生错误：" + ex.Message ;
-                loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
+                //loggerHelper.Error(this.GetType(), new LogContent(jkId, zdbs, "Query", jsonData), ex);
             }
             responseData.RowNum = responseData.Body.Count();
             responseData.Message = responseData.Message + "(" + jkId + ")";
@@ -280,6 +283,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                 //{
                 //    file.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "----" + jkId + "----" + jsonData + "/n");
                 //}
+                //loggerHelper.Info(this.GetType(), new LogContent(jkId, zdbs, "Write", jsonData));
                 switch (jkId)
                 {
                     //用户登录
@@ -306,6 +310,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         break;
                     //保存照片
                     case "LYYDJKW007":
+                        nLogger.Info(requestData);
                         SaveResult[] saveResults007 = WC.LYYDJKW007(requestData, responseData);
                         responseData.Body = saveResults007;
                         break;
@@ -314,6 +319,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         responseData.Body = saveResults008;
                         break;
                     case "LYYDJKW009":
+                        nLogger.Info(requestData);
                         SaveResult[] saveResults009 = WC.LYYDJKW009(requestData, responseData);
                         responseData.Body = saveResults009;
                         break;

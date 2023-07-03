@@ -127,15 +127,15 @@ namespace MotorvehicleInspectionSystem.Controllers
                 else if (VehicleInspectionController.SyHj == "1")
                 {
                     sql = " select t1.Lsh as Lsh ,t1.Lsh as hjlsh,t2.hphm as Hphm,t1.Jccs as jccs,t1.Jccs as hjjccs ";
-                    sql += " ,(select mc from jscscode where dm = t2.hpzl and fl = '09') as HpzlCc ,t2.hpzl as Hpzl ";
-                    sql += " ,(select mc from jscscode where dm = t2.cllx and fl = '07') as CllxCc ,t2.cllx as Cllx ";
-                    sql += " ,(select mc from jscscode where dm = t2.gcjk and fl = '36') as HpysCc ,t2.gcjk as Hpys ";
+                    sql += " ,(select mc from jscscode where dm = t2.hpzl and fl = 'PLATE_TYPE') as HpzlCc ,t2.hpzl as Hpzl ";
+                    sql += " ,(select dm from jscscode where mc = t2.cllx and fl = 'VEHICLE_TYPE') as Cllx ,t2.cllx as CllxCc ";
+                    sql += " ,(select dm from jscscode where mc = t2.hpys and fl = 'PLATE_COLOR') as Hpys ,t2.hpys as HpysCc ";
                     sql += " ,convert(varchar(10), convert(datetime, t1.Jcdate ), 120) +' '+ t1.Jctime  as Djrq  ";
                     sql += " ,'' as Jyzt ";
                     sql += " ,'-' as ajywlbCc ,'-' as ajywlb ,'-' as ajlsh,'0' as ajjccs ";
-                    sql += " ,(select mc from jscscode where dm = t1.Jclb and fl = '08') as hjywlbCc,t1.Jclb as hjywlb ";
+                    sql += " ,(select dm from jscscode where mc = t1.Jclb and fl = 'CHECK_TYPE') as hjywlb,t1.Jclb as hjywlbCc ";
                     sql += " ,'环检' as ywlb ,'1' as sfsf,'1' as sfkp";
-                    sql += " from LY_Flow_Info t1,BaseInfo_Net t2 ";
+                    sql += " from LY_Flow_Info t1,BaseInfo_Net2 t2 ";
                     sql += " where t1.Lsh = t2.Lsh  and (t1.GW_01 ='0' or t1.GW_03 ='0')";
                     sql += " and convert(varchar(10),convert(datetime, t1.JcDate),120) = convert(varchar(10), GETDATE(), 120) ";
                     sql += " and t2.hphm like '%" + queryVehQueueR002.Hphm + "%' ";
@@ -300,6 +300,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                     keyValues.Add("SUPPLY_MODE", "gj");
                     keyValues.Add("USAGE_NATURE", "01");
                     keyValues.Add("VEHICLE_TYPE", "07");
+                    //keyValues.Add("CHECK_TYPE", "07");// CHECK_TYPE
                     foreach (string key in keyValues.Keys)
                     {
                         dataDictionaries.FindAll(x => x.Fl == key).ForEach(x => x.Fl = keyValues[key]);
@@ -331,9 +332,13 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<ChargeItem> chargeItems = new List<ChargeItem>();
             try
             {
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = "select * from JsCsCode where fl='99' ";
-                chargeItems = dbAj.QueryForList<ChargeItem>(sql, null);
+                if (VehicleInspectionController.SyAj == "1")
+                {
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select * from JsCsCode where fl='99' ";
+                    chargeItems = dbAj.QueryForList<ChargeItem>(sql, null);
+                }
+
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -413,12 +418,15 @@ namespace MotorvehicleInspectionSystem.Controllers
                     //安检查询到，再次确认环检业务类型
                     if (VehicleInspectionController.SyHj == "1")
                     {
-                        sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id, t1.*";
-                        sql += " ,'' as sfmj,'-' as ajywlb ,'-' as zjywlb,t2.Jclb as hjywlb ,t2.JcXm as hjxm ,'-' as Aj_Veh_Type,'-' as Zj_Veh_Type,'-' as Wgchx";
-                        sql += " ,t2.jcdate,t2.jctime,'0' as Zhchzhsh,'' as Zhchzhw,'0' as Zhzhsh,'' as Qdzhw,'0' as SFKZ,t1.qgs as Qgs,'' as rygg,t1.syr_dh as lsdh";
+                        sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id, t1.*,'' as Clpp1,'' as Clpp2,'' as Gcjk,'' as Zzg,'' as Zzcmc,'' as Csys";
+                        sql += " ,'' as Sfzmhm,'' as Sfzmmc,'' as Djrq,'' as Yxqz,'' as Qzbfqz,'' as Fzjg,'' as Glbm,'' as Bxzzrq,'' as Zt,'' as Dybj,t1.ryzl as Rlzl,'' as sfmj,'-' as ajywlb ,'-' as zjywlb,t2.Jclb as hjywlb ,t2.JcXm as hjxm ,'-' as Aj_Veh_Type,'-' as Zj_Veh_Type,'-' as Wgchx";
+                        sql += " ,t1.edgl as Gl,'1' as Zxxs,'' as Cwkc,'' as Cwkk,'' as Cwkg,t2.jcdate,t2.jctime,'0' as Zhchzhsh,'' as Zhchzhw,'0' as Zhzhsh,'' as Qdzhw,'0' as SFKZ,t1.qgs as Qgs,'' as rygg,t1.syr_dh as lsdh";
                         sql += " ,t1.syr_dz as lxdz,'' as hpys,t1.edzs as edzhs,'' as Bzhzhw,'' as Jdchsshlb,'' as Jcxlb,'0' as Qzhsh,'0' as Zhxzhsh,'' as Zjjylb,'' as Yyzhh";
                         sql += " ,'' as Zjlsh,'' as Dzss,'' as Kqxjzw,t1.pfbz as Pfjd,t1.pqgsl as pqgsh,jqfs as Jqfs,'' as Dws,gyfs as Gyfs,'-' as sjr,'' as Sjrdh,'' as Sjrsfzh";
                         sql += " ,t2.InBz_01 as Hjdlsj ,t2.lsh as hjlsh,'-' as ajlsh,'0' as Chych,'0' as qdzhsh";
+                        sql += " ,'' as Hxnbcd,'' as Hxnbkd,'' as Hxnbgd,'' as Gbthps,'2' as Zs,'' as Zj,'' as Qlj,'' as Hlj,'' as Ltgg,'4' as lts,'' as hdzzl,'' as Zqyzl,'' as Qpzk,'' as Hpzk";
+                        sql += " ,'' as Clyt,'' as Ytsx,'' as Xszbh,'' as Jyhgbzbh,'' as Xzqh,'' as Zsxzqh,'' as Zzxzqh,'' as Hbdbqk,'' as Qzdz,'' as DGTZFS,'' as ZXJFS,t1.lcb as XSLC,'' as Max_SD";
+                        sql += " ,'' as Zjdw,t1.bsxxs as BSQXS,'' as ZDFS";
                         sql += " from BaseInfo_Net2 t1,LY_Flow_Info t2 where t1.Lsh = t2.Lsh ";
                         if (!string.IsNullOrEmpty(queryVehicleDetailsR005.Hjlsh))
                         {
@@ -439,7 +447,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                         {
                             sql += "and t2.xszbh ='" + queryVehicleDetailsR005.Xszbh.Trim().Replace("'", "").Replace("-", "") + "'";
                         }
-                        if (ajNull)
+                        if (!ajNull)
                         {
                             vehicleDetails = dbHj.QueryForList<VehicleDetails>(sql, null);
                         }
@@ -569,6 +577,17 @@ namespace MotorvehicleInspectionSystem.Controllers
                                             break;
                                         case "R1":
                                         case "R2":
+                                            sql = "select  ROW_NUMBER()OVER(ORDER BY (select 0)) as id";
+                                            sql+= ", dalb as jcxm,(select mc from jscscode where fl='83' and dm=dalb ) as xmmc";
+                                            sql += ",lsh,lsh as ajlsh,'2' as jccs,'2' as ajjccs,'00' as ajywlb,'-' as hjywlb,'-' as hjlsh,'0' as hjjccs";
+                                            sql += ",'1' as jcxh ,bz1 as jcry_01 ,'' as jcry_02 ";
+                                            sql += ",CONVERT(datetime, SUBSTRING(kstime, 1, 4) + '/' + SUBSTRING(kstime, 5, 2) + '/' + SUBSTRING(kstime, 7, 2) + ' ' + SUBSTRING(kstime, 9, 2) + ':' + SUBSTRING(kstime, 11, 2) + ':' + SUBSTRING(kstime, 13, 2), 120) as jckssj ";
+                                            sql += ",CONVERT(datetime, SUBSTRING(jstime, 1, 4) + '/' + SUBSTRING(jstime, 5, 2) + '/' + SUBSTRING(jstime, 7, 2) + ' ' + SUBSTRING(jstime, 9, 2) + ':' + SUBSTRING(jstime, 11, 2) + ':' + SUBSTRING(jstime, 13, 2), 120) as jcjssj ";
+                                            sql += ",case jcpj when '1' then '合格' when '-1' then '不合格' else '其他' end as  jcpj  ,'完成' as jczt ";
+                                            sql += "from [dbo].[JcData_R]";
+                                            sql += " where lsh = '" + queryByLSH.Ajlsh + "'";
+                                            sql += " and dalb = '" + jcxmS + "' ";
+                                            inspectionItemsR006 = dbAj.QueryForObject<InspectionItemsR006>(sql, null);
                                             break;
                                     }
                                     inspectionItemsR006.ID = id;
@@ -1529,7 +1548,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 }
                                 else
                                 {
-                                    sql += "  and t1.itemdm <>'04'";
+                                    sql += "  and t1.itemdm <>'03'";
                                 }
                                 sql += " order by t1.itemdm";
                                 break;
@@ -1713,7 +1732,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                             ",case  when Pic_HJ_DM is null then '-' when Pic_HJ_DM='NULL' then '-' when Pic_HJ_DM='0' then '-' else Pic_HJ_DM  end as zphjdm" +
                             ",'1' as bcaj,'0' as bchj ";
                         sql += " from[dbo].[tb_cartypeandphotodm] t1,Pic_Sj_Bt_Pic_Type t2 ";
-                        sql += " where cartype = '" + wjcx + "' and t1.photoDm = t2.Pic_Num ";
+                        sql += " where cartype = '" + wjcx + "' and t1.photoDm = t2.Pic_Num  order by Pic_Bz02,id ";
                         inspectionPhotoR017s = dbAj.QueryForList<InspectionPhotoR017>(sql, null);
                         responseData.Code = "1";
                         responseData.Message = "SUCCESS";
@@ -1989,31 +2008,44 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<InspectionDurationR019> inspectionDurationR019s = new List<InspectionDurationR019>();
             try
             {
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
-                string sql = "";
-                if (queryCriteria.Jyxm != "" && !(queryCriteria.Jyxm is null))
+                if (VehicleInspectionController.SyAj == "1")
                 {
-                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc from ( " +
-                   " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
-                   " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' and jyxm='" + queryCriteria.Jyxm + "'";
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                    string sql = "";
+                    if (queryCriteria.Jyxm != "" && !(queryCriteria.Jyxm is null))
+                    {
+                        sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc from ( " +
+                       " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
+                       " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' and jyxm='" + queryCriteria.Jyxm + "'";
+                    }
+                    else
+                    {
+                        sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc  from ( " +
+                       " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
+                       " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
+                       " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' ";
+                    }
+
+                    inspectionDurationR019s = dbAj.QueryForList<InspectionDurationR019>(sql, null);
                 }
                 else
                 {
-                    sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc  from ( " +
-                   " select 'F1' as Jyxm,Yqsc = Time_Wg,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'C1' as Jyxm,Yqsc = Time_Dp,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'DC' as Jyxm,Yqsc = Time_Dt,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'B' as Jyxm,Yqsc = Time_Zd,CxmsDm from[dbo].[Time_Jc_CxCs] union all " +
-                   " select 'H' as Jyxm,Yqsc = Time_Dg,CxmsDm from[dbo].[Time_Jc_CxCs] " +
-                   " ) as t1 where CxmsDm = '" + queryCriteria.Ajcx + "' ";
+                    DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
+                    QueryVehicleCriteria queryCriteria = JSONHelper.ConvertObject<QueryVehicleCriteria>(requestData.Body[0]);
+                    string sql = "select ROW_NUMBER()OVER(ORDER BY (select 0)) as id ,jyxm,Yqsc from ( " +
+                      " select 'F1' as Jyxm,Yqsc = 1 union all " +
+                      " select 'C1' as Jyxm,Yqsc = 1  ) as t1 where  jyxm='" + queryCriteria.Jyxm + "'";
+                    inspectionDurationR019s = dbHj.QueryForList<InspectionDurationR019>(sql, null);
                 }
-
-                inspectionDurationR019s = dbAj.QueryForList<InspectionDurationR019>(sql, null);
+                    
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
 
@@ -2095,7 +2127,7 @@ namespace MotorvehicleInspectionSystem.Controllers
                                 sql += " where t2.Fl = '5' order by Sycx desc, itemdm ";
                                 break;
                             case "UC":
-                                mrhgStr = "02,03,05,06";
+                                mrhgStr = "02,04,05,06";
                                 if (queryCriteria.Ajywlb == "00")
                                 {
                                     mrhgStr = "03,04,05,06";
@@ -2179,9 +2211,23 @@ namespace MotorvehicleInspectionSystem.Controllers
                         List<ArtificialProject> artificialProjects = new List<ArtificialProject>();
                         DbUtility dbHj = new DbUtility(VehicleInspectionController.ConstrHj, DbProviderType.SqlServer);
 
+                        sql = "select ryzl  from [dbo].[BaseInfo_Net2] where Lsh ='LY202301301150196'";
+                        string ryzl = dbHj.ExecuteScalar(sql, null).ToString ();
+                        if (string.IsNullOrEmpty (ryzl ))
+                        {
+                            ryzl = "汽油";
+                        }
+                        if (ryzl=="汽油")
+                        {
+                            ryzl = "QY";
+                        }
+                        if (ryzl == "柴油")
+                        {
+                            ryzl = "CY";
+                        }
                         sql = "SELECT ROW_NUMBER()OVER(ORDER BY (select 0)) as id ";
                         sql += " ,'' as Cartype,'' as Wjcxmc, fl as Fldm,dm as ItemDm ,mc as Xmms,'-' as Jyyq ,'1' as Sycx ";
-                        sql += " FROM QcyJcWgDpDmInfo WHERE 1 = 1 and Fl = '1' order by dm ";
+                        sql += " FROM QcyJcWgDpDmInfo WHERE 1 = 1 and bz='" + ryzl +"' and Fl = '1' order by dm ";
                         artificialProjects = dbHj.QueryForList<ArtificialProject>(sql, null);
                         artificialProjectR016 = new ArtificialProjectR016();
                         if (artificialProjectR016s.Count == 0)
@@ -2350,9 +2396,12 @@ namespace MotorvehicleInspectionSystem.Controllers
             string sql;
             try
             {
-                DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                sql = "select * from tb_xzqh ";
-                administrativeRegionR023s = dbAj.QueryForList<AdministrativeRegionR023>(sql, null);
+                if (VehicleInspectionController.SyAj == "1")
+                {
+                    DbUtility dbAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    sql = "select * from tb_xzqh ";
+                    administrativeRegionR023s = dbAj.QueryForList<AdministrativeRegionR023>(sql, null);
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
@@ -2475,9 +2524,12 @@ namespace MotorvehicleInspectionSystem.Controllers
             List<InvoiceParameters> invoiceParameters = new List<InvoiceParameters>();
             try
             {
-                DbUtility dnAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
-                string sql = "select Cs_01 as Skdwsbh,Cs_02 as Shr,Cs_03 as Skdwmc,Cs_04 as Bmdm,Cs_05 as Spbm,Cs_08 as Dh,Cs_09 as Dz,Cs_10 as Khh,Cs_12 as Fpjksfsbm,'0.06' as Sl from FP_SysCs";
-                invoiceParameters = dnAj.QueryForList<InvoiceParameters>(sql, null);
+                if (VehicleInspectionController.SyAj == "1")
+                {
+                    DbUtility dnAj = new DbUtility(VehicleInspectionController.ConstrAj, DbProviderType.SqlServer);
+                    string sql = "select Cs_01 as Skdwsbh,Cs_02 as Shr,Cs_03 as Skdwmc,Cs_04 as Bmdm,Cs_05 as Spbm,Cs_08 as Dh,Cs_09 as Dz,Cs_10 as Khh,Cs_12 as Fpjksfsbm,'0.06' as Sl from FP_SysCs";
+                    invoiceParameters = dnAj.QueryForList<InvoiceParameters>(sql, null);
+                }
                 responseData.Code = "1";
                 responseData.Message = "SUCCESS";
             }
